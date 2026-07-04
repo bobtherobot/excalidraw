@@ -70,10 +70,28 @@ export const canChangeStrokeColor = (
   return (
     (hasStrokeColor(appState.activeTool.type) &&
       appState.activeTool.type !== "image" &&
+      // text uses the dedicated Text color control, not Stroke (wimp fork)
+      appState.activeTool.type !== "text" &&
       commonSelectedType !== "image" &&
       commonSelectedType !== "frame" &&
       commonSelectedType !== "magicframe") ||
-    targetElements.some((element) => hasStrokeColor(element.type))
+    targetElements.some(
+      (element) => hasStrokeColor(element.type) && !isTextElement(element),
+    )
+  );
+};
+
+// wimp fork: the Text color control shows for the text tool, selected text
+// elements, or containers with a bound text label (so its label can be recolored).
+export const canChangeTextColor = (
+  appState: UIAppState,
+  targetElements: ExcalidrawElement[],
+) => {
+  return (
+    appState.activeTool.type === "text" ||
+    targetElements.some(
+      (element) => isTextElement(element) || hasBoundTextElement(element),
+    )
   );
 };
 
@@ -141,6 +159,10 @@ export const SelectedShapeActions = ({
 
   return (
     <div className="panelColumn">
+      <div>
+        {canChangeTextColor(appState, targetElements) &&
+          renderAction("changeTextColor")}
+      </div>
       <div>
         {canChangeStrokeColor(appState, targetElements) &&
           renderAction("changeStrokeColor")}

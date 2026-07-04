@@ -287,14 +287,16 @@ export const actionChangeStrokeColor = register({
         elements: changeProperty(
           elements,
           appState,
+          // Text color is owned by the separate "Text" control (wimp fork), so
+          // Stroke no longer recolors text or bound-text elements.
           (el) => {
-            return hasStrokeColor(el.type)
+            return hasStrokeColor(el.type) && !isTextElement(el)
               ? newElementWith(el, {
                   strokeColor: value.currentItemStrokeColor,
                 })
               : el;
           },
-          true,
+          false,
         ),
       }),
       appState: {
@@ -318,10 +320,67 @@ export const actionChangeStrokeColor = register({
           elements,
           appState,
           (element) => element.strokeColor,
-          true,
+          (element) => !isTextElement(element),
           appState.currentItemStrokeColor,
         )}
         onChange={(color) => updateData({ currentItemStrokeColor: color })}
+        elements={elements}
+        appState={appState}
+        updateData={updateData}
+      />
+    </>
+  ),
+});
+
+// wimp fork: dedicated Text color control, independent of Stroke. Text color is
+// stored as the element's strokeColor (Excalidraw has no separate text-color
+// field), but this control scopes to text/bound-text elements only, and new
+// text draws from `currentItemTextColor` (see App.tsx text creation).
+export const actionChangeTextColor = register({
+  name: "changeTextColor",
+  label: "labels.textColor",
+  trackEvent: false,
+  perform: (elements, appState, value) => {
+    return {
+      ...(value.currentItemTextColor && {
+        elements: changeProperty(
+          elements,
+          appState,
+          (el) =>
+            isTextElement(el)
+              ? newElementWith(el, {
+                  strokeColor: value.currentItemTextColor,
+                })
+              : el,
+          // include bound text so recoloring a selected container recolors its label
+          true,
+        ),
+      }),
+      appState: {
+        ...appState,
+        ...value,
+      },
+      captureUpdate: !!value.currentItemTextColor
+        ? CaptureUpdateAction.IMMEDIATELY
+        : CaptureUpdateAction.EVENTUALLY,
+    };
+  },
+  PanelComponent: ({ elements, appState, updateData, appProps }) => (
+    <>
+      <h3 aria-hidden="true">{t("labels.textColor")}</h3>
+      <ColorPicker
+        topPicks={DEFAULT_ELEMENT_STROKE_PICKS}
+        palette={DEFAULT_ELEMENT_STROKE_COLOR_PALETTE}
+        type="elementStroke"
+        label={t("labels.textColor")}
+        color={getFormValue(
+          elements,
+          appState,
+          (element) => element.strokeColor,
+          (element) => isTextElement(element),
+          appState.currentItemTextColor,
+        )}
+        onChange={(color) => updateData({ currentItemTextColor: color })}
         elements={elements}
         appState={appState}
         updateData={updateData}

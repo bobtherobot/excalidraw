@@ -3438,7 +3438,8 @@ class App extends React.Component<AppProps, AppState> {
     const textElementProps = {
       x,
       y,
-      strokeColor: this.state.currentItemStrokeColor,
+      // text color is independent of stroke (wimp fork)
+      strokeColor: this.state.currentItemTextColor,
       backgroundColor: this.state.currentItemBackgroundColor,
       fillStyle: this.state.currentItemFillStyle,
       strokeWidth: this.state.currentItemStrokeWidth,
@@ -5280,7 +5281,8 @@ class App extends React.Component<AppProps, AppState> {
           y: parentCenterPosition
             ? parentCenterPosition.elementCenterY
             : sceneY,
-          strokeColor: this.state.currentItemStrokeColor,
+          // text color is independent of stroke (wimp fork)
+          strokeColor: this.state.currentItemTextColor,
           backgroundColor: this.state.currentItemBackgroundColor,
           fillStyle: this.state.currentItemFillStyle,
           strokeWidth: this.state.currentItemStrokeWidth,
