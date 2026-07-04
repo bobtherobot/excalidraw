@@ -331,6 +331,7 @@ export interface AppState {
     | "canvasBackground"
     | "elementBackground"
     | "elementStroke"
+    | "elementText"
     | "fontFamily"
     | null;
   openSidebar: { name: SidebarName; tab?: SidebarTabName } | null;

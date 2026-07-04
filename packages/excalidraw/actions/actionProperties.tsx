@@ -371,7 +371,9 @@ export const actionChangeTextColor = register({
       <ColorPicker
         topPicks={DEFAULT_ELEMENT_STROKE_PICKS}
         palette={DEFAULT_ELEMENT_STROKE_COLOR_PALETTE}
-        type="elementStroke"
+        // distinct type so the Text popover doesn't collide with Stroke's
+        // (openPopup state is keyed by type) — wimp fork
+        type="elementText"
         label={t("labels.textColor")}
         color={getFormValue(
           elements,

@@ -424,7 +424,8 @@ const LayerUI = ({
           onChange={(colorPickerType, color, selectedElements, { altKey }) => {
             if (
               colorPickerType !== "elementBackground" &&
-              colorPickerType !== "elementStroke"
+              colorPickerType !== "elementStroke" &&
+              colorPickerType !== "elementText"
             ) {
               return;
             }
@@ -434,6 +435,7 @@ const LayerUI = ({
                 mutateElement(
                   element,
                   {
+                    // elementText writes strokeColor (text color) — wimp fork
                     [altKey && eyeDropperState.swapPreviewOnAlt
                       ? colorPickerType === "elementBackground"
                         ? "strokeColor"
@@ -451,6 +453,8 @@ const LayerUI = ({
               setAppState({
                 currentItemBackgroundColor: color,
               });
+            } else if (colorPickerType === "elementText") {
+              setAppState({ currentItemTextColor: color });
             } else {
               setAppState({ currentItemStrokeColor: color });
             }
