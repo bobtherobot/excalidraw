@@ -732,6 +732,12 @@ class App extends React.Component<AppProps, AppState> {
         registerAction: (action: Action) => {
           this.actionManager.registerAction(action);
         },
+        executeAction: (name: string, value: unknown = null) => {
+          const action = (this.actionManager.actions as Record<string, Action>)[name];
+          if (action) {
+            this.actionManager.executeAction(action, "api", value as never);
+          }
+        },
         refresh: this.refresh,
         setToast: this.setToast,
         id: this.id,

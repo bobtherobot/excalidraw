@@ -778,6 +778,13 @@ export interface ExcalidrawImperativeAPI {
   getName: InstanceType<typeof App>["getName"];
   scrollToContent: InstanceType<typeof App>["scrollToContent"];
   registerAction: (action: Action) => void;
+  /**
+   * flow addition: dispatch a registered Excalidraw action by name (e.g.
+   * "sendToBack", "group", "alignLeft", "changeArrowType"). Runs the action's
+   * perform against the current selection with correct history capture — used by
+   * flow's Edit menu and panels to reuse Excalidraw's action logic.
+   */
+  executeAction: (name: string, value?: unknown) => void;
   refresh: InstanceType<typeof App>["refresh"];
   setToast: InstanceType<typeof App>["setToast"];
   addFiles: (data: BinaryFileData[]) => void;
