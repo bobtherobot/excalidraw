@@ -298,3 +298,12 @@ export { getDataURL } from "./data/blob";
 export { isElementLink } from "./element/elementLink";
 
 export { setCustomTextMetricsProvider } from "./element/textMeasurements";
+
+// flow addition: pure canvas-search match computation (drives AppState.searchMatches
+// from a host app without mounting the built-in SearchMenu sidebar).
+export { getSearchMatches } from "./searchMatches";
+export type {
+  SearchResult,
+  SearchMatchLine,
+  SearchMatchPreview,
+} from "./searchMatches";
