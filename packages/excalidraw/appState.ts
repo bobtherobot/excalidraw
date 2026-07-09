@@ -6,6 +6,7 @@ import {
   DEFAULT_FONT_SIZE,
   DEFAULT_TEXT_ALIGN,
   DEFAULT_GRID_SIZE,
+  DEFAULT_LASER_COLOR,
   EXPORT_SCALES,
   STATS_PANELS,
   THEME,
@@ -70,6 +71,7 @@ export const getDefaultAppState = (): Omit<
     gridModeEnabled: false,
     isBindingEnabled: true,
     bindingMode: "auto", // flow: persistent arrow-binding lock (default = auto)
+    laserColor: DEFAULT_LASER_COLOR, // flow: global laser-pointer color
     defaultSidebarDockedPreference: false,
     isLoading: false,
     isResizing: false,
@@ -197,6 +199,8 @@ const APP_STATE_STORAGE_CONF = (<
   // flow: persistence is owned by flow (localStorage flow.bindingMode) and
   // re-applied on load, so Excalidraw itself keeps none of it.
   bindingMode: { browser: false, export: false, server: false },
+  // flow: persistence owned by flow (localStorage flow.laserColor), re-applied on load.
+  laserColor: { browser: false, export: false, server: false },
   defaultSidebarDockedPreference: {
     browser: true,
     export: false,

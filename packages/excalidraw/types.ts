@@ -274,6 +274,7 @@ export interface AppState {
    *  `isBindingEnabled` selector. "on" forces binding, "off" prevents it,
    *  "auto"/undefined keeps Excalidraw's default (transient) behavior. */
   bindingMode?: "on" | "off" | "auto";
+  laserColor?: string; // flow: global laser-pointer trail color
   startBoundElement: NonDeleted<ExcalidrawBindableElement> | null;
   suggestedBindings: SuggestedBinding[];
   frameToHighlight: NonDeleted<ExcalidrawFrameLikeElement> | null;
