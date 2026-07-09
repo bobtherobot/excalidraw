@@ -270,6 +270,10 @@ export interface AppState {
    */
   selectionElement: NonDeletedExcalidrawElement | null;
   isBindingEnabled: boolean;
+  /** flow addition: persistent arrow-binding lock honored by the
+   *  `isBindingEnabled` selector. "on" forces binding, "off" prevents it,
+   *  "auto"/undefined keeps Excalidraw's default (transient) behavior. */
+  bindingMode?: "on" | "off" | "auto";
   startBoundElement: NonDeleted<ExcalidrawBindableElement> | null;
   suggestedBindings: SuggestedBinding[];
   frameToHighlight: NonDeleted<ExcalidrawFrameLikeElement> | null;

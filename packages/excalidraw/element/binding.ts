@@ -96,6 +96,14 @@ export const shouldEnableBindingForPointerEvent = (
 };
 
 export const isBindingEnabled = (appState: AppState): boolean => {
+  // flow: a persistent lock (appState.bindingMode) overrides the transient
+  // per-input flag so arrows can be forced to always / never bind.
+  if (appState.bindingMode === "on") {
+    return true;
+  }
+  if (appState.bindingMode === "off") {
+    return false;
+  }
   return appState.isBindingEnabled;
 };
 
