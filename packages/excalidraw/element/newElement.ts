@@ -477,6 +477,9 @@ export const newArrowElement = <T extends boolean>(
     type: ExcalidrawArrowElement["type"];
     startArrowhead?: Arrowhead | null;
     endArrowhead?: Arrowhead | null;
+    // flow: per-end arrowhead size factor (× strokeWidth) for new arrows.
+    startArrowheadSize?: number;
+    endArrowheadSize?: number;
     points?: ExcalidrawArrowElement["points"];
     elbowed?: T;
     fixedSegments?: FixedSegment[] | null;
@@ -493,6 +496,8 @@ export const newArrowElement = <T extends boolean>(
       endBinding: null,
       startArrowhead: opts.startArrowhead || null,
       endArrowhead: opts.endArrowhead || null,
+      startArrowheadSize: opts.startArrowheadSize,
+      endArrowheadSize: opts.endArrowheadSize,
       elbowed: true,
       fixedSegments: opts.fixedSegments || [],
       startIsSpecial: false,
@@ -508,6 +513,8 @@ export const newArrowElement = <T extends boolean>(
     endBinding: null,
     startArrowhead: opts.startArrowhead || null,
     endArrowhead: opts.endArrowhead || null,
+    startArrowheadSize: opts.startArrowheadSize,
+    endArrowheadSize: opts.endArrowheadSize,
     elbowed: false,
   } as T extends true
     ? NonDeleted<ExcalidrawElbowArrowElement>

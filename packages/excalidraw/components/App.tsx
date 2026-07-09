@@ -7733,6 +7733,9 @@ class App extends React.Component<AppProps, AppState> {
                     null,
               startArrowhead,
               endArrowhead,
+              // flow: new arrows inherit the default arrowhead size factors.
+              startArrowheadSize: this.state.currentItemStartArrowheadSize,
+              endArrowheadSize: this.state.currentItemEndArrowheadSize,
               locked: false,
               frameId: topLayerFrame ? topLayerFrame.id : null,
               elbowed: this.state.currentItemArrowType === ARROW_TYPE.elbow,

@@ -318,6 +318,9 @@ export interface AppState {
   currentItemTextAlign: TextAlign;
   currentItemStartArrowhead: Arrowhead | null;
   currentItemEndArrowhead: Arrowhead | null;
+  // flow addition: default arrowhead size factors (× strokeWidth) for new arrows.
+  currentItemStartArrowheadSize: number;
+  currentItemEndArrowheadSize: number;
   currentHoveredFontFamily: FontFamilyValues | null;
   currentItemRoundness: StrokeRoundness;
   currentItemArrowType: "sharp" | "round" | "elbow";
