@@ -445,7 +445,9 @@ export const _generateElementShape = (
         } else {
           shape = [
             generator.path(
-              generateElbowArrowShape(points, 16),
+              // flow: honour an explicit corner radius (Transform panel); the
+              // hardcoded 16 remains the default when unset.
+              generateElbowArrowShape(points, element.cornerRadius ?? 16),
               generateRoughOptions(element, true),
             ),
           ];

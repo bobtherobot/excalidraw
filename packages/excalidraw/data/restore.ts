@@ -198,6 +198,12 @@ const restoreElementWithProperties = <
             : ROUNDNESS.PROPORTIONAL_RADIUS,
         }
       : null,
+    // flow: preserve the explicit corner radius (Transform panel) across
+    // save/reload; undefined leaves the roundness presets in charge.
+    cornerRadius: element.cornerRadius,
+    // flow: preserve the per-container text padding (Transform panel); undefined
+    // falls back to BOUND_TEXT_PADDING.
+    padding: element.padding,
     boundElements: element.boundElementIds
       ? element.boundElementIds.map((id) => ({ type: "arrow", id }))
       : element.boundElements ?? [],

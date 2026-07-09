@@ -45,6 +45,13 @@ type _ExcalidrawElementBase = Readonly<{
   strokeWidth: number;
   strokeStyle: StrokeStyle;
   roundness: null | { type: RoundnessType; value?: number };
+  // flow: explicit numeric corner radius set via the Transform panel. When a
+  // number, it overrides the roundness presets in getCornerRadius (rectangle,
+  // diamond) and the elbow-arrow corner rounding. Undefined = legacy behaviour.
+  cornerRadius?: number;
+  // flow: per-container padding between a container's edge and its bound text
+  // (Transform panel), driving where the text wraps. Undefined = BOUND_TEXT_PADDING.
+  padding?: number;
   roughness: number;
   opacity: number;
   width: number;

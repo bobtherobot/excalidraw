@@ -452,6 +452,12 @@ export const aabbsOverlapping = (a: Bounds, b: Bounds) =>
   pointInsideBounds(pointFrom(b[0], b[3]), a);
 
 export const getCornerRadius = (x: number, element: ExcalidrawElement) => {
+  // flow: an explicit numeric corner radius (Transform panel) overrides the
+  // roundness presets, capped at half the shorter side so corners never overlap.
+  if (typeof element.cornerRadius === "number") {
+    return Math.max(0, Math.min(element.cornerRadius, x / 2));
+  }
+
   if (
     element.roundness?.type === ROUNDNESS.PROPORTIONAL_RADIUS ||
     element.roundness?.type === ROUNDNESS.LEGACY

@@ -260,6 +260,11 @@ export {
   bumpVersion,
 } from "./element/mutateElement";
 
+// flow addition: single-element resize used by the Transform sub-panel. Reuses
+// Excalidraw's own resize math (linear point scaling, bound-text reflow/rescale,
+// roundness) so numeric width/height edits match handle-drag behaviour.
+export { resizeSingleElement } from "./element/resizeElements";
+
 export { CaptureUpdateAction } from "./store";
 
 export { parseLibraryTokensFromUrl, useHandleLibrary } from "./data/library";
