@@ -297,6 +297,8 @@ const restoreElement = (
     // eslint-disable-next-line no-fallthrough
     case "draw":
       const { startArrowhead = null, endArrowhead = null } = element;
+      // flow: preserve per-end arrowhead size factors across restore.
+      const { startArrowheadSize, endArrowheadSize } = element;
       let x = element.x;
       let y = element.y;
       let points = // migrate old arrow model to new one
@@ -318,6 +320,8 @@ const restoreElement = (
         lastCommittedPoint: null,
         startArrowhead,
         endArrowhead,
+        startArrowheadSize,
+        endArrowheadSize,
         points,
         x,
         y,
@@ -325,6 +329,8 @@ const restoreElement = (
       });
     case "arrow": {
       const { startArrowhead = null, endArrowhead = "arrow" } = element;
+      // flow: preserve per-end arrowhead size factors across restore.
+      const { startArrowheadSize, endArrowheadSize } = element;
       let x: number | undefined = element.x;
       let y: number | undefined = element.y;
       let points: readonly LocalPoint[] | undefined = // migrate old arrow model to new one
@@ -343,6 +349,8 @@ const restoreElement = (
         lastCommittedPoint: null,
         startArrowhead,
         endArrowhead,
+        startArrowheadSize,
+        endArrowheadSize,
         points,
         x,
         y,

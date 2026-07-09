@@ -317,6 +317,11 @@ export type ExcalidrawLinearElement = _ExcalidrawElementBase &
     endBinding: PointBinding | null;
     startArrowhead: Arrowhead | null;
     endArrowhead: Arrowhead | null;
+    // flow addition: per-element arrowhead size as a multiple of strokeWidth
+    // (size = strokeWidth * factor). Optional; undefined falls back to the
+    // default factor in getArrowheadPoints. See bounds.ts / restore.ts.
+    startArrowheadSize?: number;
+    endArrowheadSize?: number;
   }>;
 
 export type FixedSegment = {
