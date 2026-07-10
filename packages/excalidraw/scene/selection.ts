@@ -47,6 +47,10 @@ export const getElementsWithinSelection = (
   selection: NonDeletedExcalidrawElement,
   elementsMap: ElementsMap,
   excludeElementsInFrames: boolean = true,
+  // flow: "enclose" (default) requires the selection rectangle to fully contain
+  // the element; "touch" selects any element the rectangle intersects. Callers
+  // other than the marquee (e.g. frame membership) keep the default enclose.
+  selectionMode: "enclose" | "touch" = "enclose",
 ) => {
   const [selectionX1, selectionY1, selectionX2, selectionY2] =
     getElementAbsoluteCoords(selection, elementsMap);
@@ -70,14 +74,24 @@ export const getElementsWithinSelection = (
       elementY2 = Math.min(fy2, elementY2);
     }
 
+    const matches =
+      selectionMode === "touch"
+        ? // AABB intersection: any overlap between the selection rect and element.
+          selectionX1 <= elementX2 &&
+          selectionX2 >= elementX1 &&
+          selectionY1 <= elementY2 &&
+          selectionY2 >= elementY1
+        : // Enclose: the selection rect fully contains the element (default).
+          selectionX1 <= elementX1 &&
+          selectionY1 <= elementY1 &&
+          selectionX2 >= elementX2 &&
+          selectionY2 >= elementY2;
+
     return (
       element.locked === false &&
       element.type !== "selection" &&
       !isBoundToContainer(element) &&
-      selectionX1 <= elementX1 &&
-      selectionY1 <= elementY1 &&
-      selectionX2 >= elementX2 &&
-      selectionY2 >= elementY2
+      matches
     );
   });
 

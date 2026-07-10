@@ -8721,6 +8721,7 @@ class App extends React.Component<AppProps, AppState> {
                 this.state.selectionElement,
                 this.scene.getNonDeletedElementsMap(),
                 false,
+                this.state.selectionMode, // flow: marquee touch vs enclose
               )
             : [];
 

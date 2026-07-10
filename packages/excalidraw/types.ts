@@ -275,6 +275,10 @@ export interface AppState {
    *  "auto"/undefined keeps Excalidraw's default (transient) behavior. */
   bindingMode?: "on" | "off" | "auto";
   laserColor?: string; // flow: global laser-pointer trail color
+  /** flow addition: marquee drag-selection mode. "enclose" (default) selects
+   *  only elements the selection rectangle fully contains; "touch" selects any
+   *  element the selection rectangle intersects. */
+  selectionMode?: "enclose" | "touch";
   startBoundElement: NonDeleted<ExcalidrawBindableElement> | null;
   suggestedBindings: SuggestedBinding[];
   frameToHighlight: NonDeleted<ExcalidrawFrameLikeElement> | null;
