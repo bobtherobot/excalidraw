@@ -3918,7 +3918,11 @@ class App extends React.Component<AppProps, AppState> {
        * whose frames were written with `EVENTUALLY`), the payload is
        * authoritative and must be captured whole, so the filter is skipped.
        *
-       * Only meaningful alongside `CaptureUpdateAction.IMMEDIATELY`.
+       * Skips the filter for both `IMMEDIATELY` and `NEVER` — the enclosing
+       * block runs, and `nextCommittedElements` is shared, for any
+       * `captureUpdate` other than `EVENTUALLY`. Only set it on a write that
+       * closes a deferred `EVENTUALLY` sequence; passing it alongside `NEVER`
+       * would write uncommitted elements straight into the snapshot.
        *
        * @default false
        */
