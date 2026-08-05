@@ -33,6 +33,7 @@ import { arrayToMap, invariant, throttleRAF } from "../utils";
 import {
   DEFAULT_TRANSFORM_HANDLE_SPACING,
   FRAME_STYLE,
+  LINEAR_SELECTION_SPACING,
   SELECTION_SPACING,
   THEME,
 } from "../constants";
@@ -989,11 +990,13 @@ const _renderInteractiveScene = ({
             activeEmbeddable:
               appState.activeEmbeddable?.element === element &&
               appState.activeEmbeddable.state === "active",
-            padding:
-              element.id === appState.croppingElementId ||
-              isImageElement(element)
-                ? 0
-                : undefined,
+            // flow: the border tracks the handles. Everything hugs the bounds
+            // except linear elements, whose handles are pushed clear of their
+            // own vertices (see LINEAR_SELECTION_SPACING) — a flush border
+            // there would leave the handles floating outside it.
+            padding: isLinearElement(element)
+              ? LINEAR_SELECTION_SPACING
+              : undefined,
           });
         }
       }

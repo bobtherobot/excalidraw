@@ -191,6 +191,16 @@ export const SIDE_RESIZING_THRESHOLD = 2 * DEFAULT_TRANSFORM_HANDLE_SPACING;
 // feeds SIDE_RESIZING_THRESHOLD and DEFAULT_COLLISION_THRESHOLD above.
 export const SELECTION_SPACING = 0;
 
+// flow: linear elements are the one exception to the tight chrome above — their
+// bounding-box corners often ARE their vertices (always so for a 2-point line),
+// and a vertex wins the hit test within LinearElementEditor.POINT_HANDLE_SIZE + 1
+// (11px, see getPointIndexUnderCursor). A corner handle offset by `m` sits m*sqrt(2)
+// from the vertex, so m must exceed ~7.8 or the handle is rendered but unclickable
+// and a corner drag silently becomes a point drag — which ignores locked aspect
+// ratio. 10 gives ~14.1px of clearance. Do not lower without re-checking that
+// margin * Math.SQRT2 > POINT_HANDLE_SIZE + 1.
+export const LINEAR_SELECTION_SPACING = 10;
+
 // a small epsilon to make side resizing always take precedence
 // (avoids an increase in renders and changes to tests)
 export const EPSILON = 0.00001;

@@ -13,7 +13,12 @@ import {
   isFrameLikeElement,
   isLinearElement,
 } from "./typeChecks";
-import { SELECTION_SPACING, isAndroid, isIOS } from "../constants";
+import {
+  SELECTION_SPACING,
+  LINEAR_SELECTION_SPACING,
+  isAndroid,
+  isIOS,
+} from "../constants";
 import type { Radians } from "@excalidraw/math";
 import { pointFrom, pointRotateRads } from "@excalidraw/math";
 
@@ -297,16 +302,17 @@ export const getTransformHandles = (
       rotation: true,
     };
   }
-  // flow: every element type gets the same tight chrome — handles sit on the
-  // element bounds. Upstream gave linears +8 and images 0; we take the image
-  // treatment everywhere.
+  // flow: handles sit on the element bounds (upstream gave linears +8 and images
+  // 0; we take the image treatment). Linear elements are the exception — their
+  // corners often ARE their vertices, and a vertex wins the hit test, so a
+  // flush handle is unclickable. See LINEAR_SELECTION_SPACING.
   return getTransformHandlesFromCoords(
     getElementAbsoluteCoords(element, elementsMap, true),
     element.angle,
     zoom,
     pointerType,
     omitSides,
-    SELECTION_SPACING,
+    isLinearElement(element) ? LINEAR_SELECTION_SPACING : SELECTION_SPACING,
     SELECTION_SPACING,
   );
 };
