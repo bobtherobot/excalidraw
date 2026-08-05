@@ -3906,6 +3906,23 @@ class App extends React.Component<AppProps, AppState> {
        * @default CaptureUpdateAction.EVENTUALLY
        */
       captureUpdate?: SceneData["captureUpdate"];
+      /**
+       * Commit changes made by preceding `EVENTUALLY` updates as part of this
+       * capture.
+       *
+       * `updateScene` normally routes the payload through
+       * `filterUncomittedElements`, which rewrites any element whose live
+       * version has run ahead of the store snapshot back to the snapshot — a
+       * guard against half-capturing a local action that is still in flight.
+       * When this write *is* that action finishing (the release ending a drag
+       * whose frames were written with `EVENTUALLY`), the payload is
+       * authoritative and must be captured whole, so the filter is skipped.
+       *
+       * Only meaningful alongside `CaptureUpdateAction.IMMEDIATELY`.
+       *
+       * @default false
+       */
+      commitDeferredChanges?: boolean;
     }) => {
       const nextElements = syncInvalidIndices(sceneData.elements ?? []);
 
@@ -3921,10 +3938,12 @@ class App extends React.Component<AppProps, AppState> {
           : prevCommittedAppState;
 
         const nextCommittedElements = sceneData.elements
-          ? this.store.filterUncomittedElements(
-              this.scene.getElementsMapIncludingDeleted(), // Only used to detect uncomitted local elements
-              arrayToMap(nextElements), // We expect all (already reconciled) elements
-            )
+          ? sceneData.commitDeferredChanges
+            ? arrayToMap(nextElements)
+            : this.store.filterUncomittedElements(
+                this.scene.getElementsMapIncludingDeleted(), // Only used to detect uncomitted local elements
+                arrayToMap(nextElements), // We expect all (already reconciled) elements
+              )
           : prevCommittedElements;
 
         // WARN: store action always performs deep clone of changed elements, for ephemeral remote updates (i.e. remote dragging, resizing, drawing) we might consider doing something smarter
