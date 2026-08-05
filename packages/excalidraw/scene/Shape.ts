@@ -183,6 +183,14 @@ const getArrowheadShapes = (
     return [];
   }
 
+  // flow: a 0 stroke width means "no outline" (see generateRoughOptions
+  // above), but arrowheads are filled shapes drawn with fill: strokeColor —
+  // suppressing only the stroke here would still paint a solid dot/triangle/
+  // diamond floating at the line's end. Suppress the whole arrowhead instead.
+  if (element.strokeWidth === 0) {
+    return [];
+  }
+
   const generateCrowfootOne = (
     arrowheadPoints: number[] | null,
     options: Options,
