@@ -58,6 +58,12 @@ export const generateRoughOptions = (
   element: ExcalidrawElement,
   continuousPath = false,
 ): Options => {
+  // flow: floor the fill maths at 1px. flow's stroke slider reaches 0, and a
+  // 0 hachureGap makes roughjs clamp to a 0.1px gap (fillers/scan-line-
+  // hachure.ts), generating tens of thousands of fill lines and hanging the
+  // canvas on hachure/cross-hatch elements from an opened document.
+  const fillBase = Math.max(element.strokeWidth, 1);
+
   const options: Options = {
     seed: element.seed,
     strokeLineDash:
@@ -78,10 +84,14 @@ export const generateRoughOptions = (
     // when increasing strokeWidth, we must explicitly set fillWeight and
     // hachureGap because if not specified, roughjs uses strokeWidth to
     // calculate them (and we don't want the fills to be modified)
-    fillWeight: element.strokeWidth / 2,
-    hachureGap: element.strokeWidth * 4,
+    fillWeight: fillBase / 2,
+    hachureGap: fillBase * 4,
     roughness: adjustRoughness(element),
-    stroke: element.strokeColor,
+    // flow: a 0 stroke width means "no outline". Required because roughjs
+    // assigns ctx.lineWidth directly and canvas ignores a non-positive
+    // lineWidth, keeping the previous draw's value — so a 0-width shape would
+    // otherwise paint a stray hairline. roughjs maps "none" to transparent.
+    stroke: element.strokeWidth === 0 ? "none" : element.strokeColor,
     preserveVertices:
       continuousPath || element.roughness < ROUGHNESS.cartoonist,
   };
