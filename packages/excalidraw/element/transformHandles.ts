@@ -11,14 +11,9 @@ import type { Device, InteractiveCanvasAppState, Zoom } from "../types";
 import {
   isElbowArrow,
   isFrameLikeElement,
-  isImageElement,
   isLinearElement,
 } from "./typeChecks";
-import {
-  DEFAULT_TRANSFORM_HANDLE_SPACING,
-  isAndroid,
-  isIOS,
-} from "../constants";
+import { SELECTION_SPACING, isAndroid, isIOS } from "../constants";
 import type { Radians } from "@excalidraw/math";
 import { pointFrom, pointRotateRads } from "@excalidraw/math";
 
@@ -129,8 +124,8 @@ export const getTransformHandlesFromCoords = (
   zoom: Zoom,
   pointerType: PointerType,
   omitSides: { [T in TransformHandleType]?: boolean } = {},
-  margin = 4,
-  spacing = DEFAULT_TRANSFORM_HANDLE_SPACING,
+  margin = SELECTION_SPACING,
+  spacing = SELECTION_SPACING,
 ): TransformHandles => {
   const size = transformHandleSizes[pointerType];
   const handleWidth = size / zoom.value;
@@ -302,19 +297,17 @@ export const getTransformHandles = (
       rotation: true,
     };
   }
-  const margin = isLinearElement(element)
-    ? DEFAULT_TRANSFORM_HANDLE_SPACING + 8
-    : isImageElement(element)
-    ? 0
-    : DEFAULT_TRANSFORM_HANDLE_SPACING;
+  // flow: every element type gets the same tight chrome — handles sit on the
+  // element bounds. Upstream gave linears +8 and images 0; we take the image
+  // treatment everywhere.
   return getTransformHandlesFromCoords(
     getElementAbsoluteCoords(element, elementsMap, true),
     element.angle,
     zoom,
     pointerType,
     omitSides,
-    margin,
-    isImageElement(element) ? 0 : undefined,
+    SELECTION_SPACING,
+    SELECTION_SPACING,
   );
 };
 

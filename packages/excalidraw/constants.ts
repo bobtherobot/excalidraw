@@ -185,6 +185,12 @@ export const DEFAULT_VERSION = "{version}";
 export const DEFAULT_TRANSFORM_HANDLE_SPACING = 2;
 
 export const SIDE_RESIZING_THRESHOLD = 2 * DEFAULT_TRANSFORM_HANDLE_SPACING;
+
+// flow: selection chrome (borders + transform handles) hugs element bounds.
+// Deliberately separate from DEFAULT_TRANSFORM_HANDLE_SPACING, which still
+// feeds SIDE_RESIZING_THRESHOLD and DEFAULT_COLLISION_THRESHOLD above.
+export const SELECTION_SPACING = 0;
+
 // a small epsilon to make side resizing always take precedence
 // (avoids an increase in renders and changes to tests)
 export const EPSILON = 0.00001;

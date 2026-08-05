@@ -33,6 +33,7 @@ import { arrayToMap, invariant, throttleRAF } from "../utils";
 import {
   DEFAULT_TRANSFORM_HANDLE_SPACING,
   FRAME_STYLE,
+  SELECTION_SPACING,
   THEME,
 } from "../constants";
 import { type InteractiveCanvasAppState } from "../types";
@@ -373,8 +374,7 @@ const renderSelectionBorder = (
   const elementWidth = x2 - x1;
   const elementHeight = y2 - y1;
 
-  const padding =
-    elementProperties.padding ?? DEFAULT_TRANSFORM_HANDLE_SPACING * 2;
+  const padding = elementProperties.padding ?? SELECTION_SPACING;
 
   const linePadding = padding / appState.zoom.value;
   const lineWidth = 8 / appState.zoom.value;
@@ -1072,8 +1072,7 @@ const _renderInteractiveScene = ({
         }
       }
     } else if (selectedElements.length > 1 && !appState.isRotating) {
-      const dashedLinePadding =
-        (DEFAULT_TRANSFORM_HANDLE_SPACING * 2) / appState.zoom.value;
+      const dashedLinePadding = SELECTION_SPACING / appState.zoom.value;
       context.fillStyle = oc.white;
       const [x1, y1, x2, y2] = getCommonBounds(selectedElements);
       const initialLineDash = context.getLineDash();
