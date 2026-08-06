@@ -7762,6 +7762,11 @@ class App extends React.Component<AppProps, AppState> {
               locked: false,
               frameId: topLayerFrame ? topLayerFrame.id : null,
               elbowed: this.state.currentItemArrowType === ARROW_TYPE.elbow,
+              // flow: only an elbow arrow has bends to soften.
+              cornerRadius:
+                this.state.currentItemArrowType === ARROW_TYPE.elbow
+                  ? this.state.currentItemCornerRadius
+                  : undefined,
               fixedSegments:
                 this.state.currentItemArrowType === ARROW_TYPE.elbow
                   ? []
@@ -7864,6 +7869,15 @@ class App extends React.Component<AppProps, AppState> {
       roughness: this.state.currentItemRoughness,
       opacity: this.state.currentItemOpacity,
       roundness: this.getCurrentItemRoundness(elementType),
+      // flow: a remembered corner radius applies to rectangles and diamonds
+      // only — an ellipse has no corners to round. Padding applies to any shape
+      // container, since it may later be given bound text. Both stay optional:
+      // undefined leaves the element's derived default in place.
+      cornerRadius:
+        elementType === "rectangle" || elementType === "diamond"
+          ? this.state.currentItemCornerRadius
+          : undefined,
+      padding: this.state.currentItemPadding,
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
     } as const;

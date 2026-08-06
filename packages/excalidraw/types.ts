@@ -329,6 +329,11 @@ export interface AppState {
   currentHoveredFontFamily: FontFamilyValues | null;
   currentItemRoundness: StrokeRoundness;
   currentItemArrowType: "sharp" | "round" | "elbow";
+  /** flow: remembered corner radius for new rectangles/diamonds and elbow
+   *  arrows. Undefined leaves the derived default in place. */
+  currentItemCornerRadius: number | undefined;
+  /** flow: remembered bound-text padding for new shape containers. */
+  currentItemPadding: number | undefined;
   viewBackgroundColor: string;
   scrollX: number;
   scrollY: number;

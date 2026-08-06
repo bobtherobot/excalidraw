@@ -150,6 +150,15 @@ const _newElementBase = <T extends ExcalidrawElement>(
     link,
     locked,
     customData: rest.customData,
+    // flow: this base constructor otherwise drops any opt not explicitly
+    // named above, so a `cornerRadius`/`padding` passed at creation (see
+    // App.tsx's `baseElementAttributes` and the `newArrowElement` call) was
+    // silently discarded. Every element type built on this base spreads it
+    // first and may override afterward, so this single pass-through covers
+    // generic shapes and — since neither `newArrowElement` nor
+    // `newLinearElement` override these two keys — arrows too.
+    cornerRadius: rest.cornerRadius,
+    padding: rest.padding,
   };
   return element;
 };

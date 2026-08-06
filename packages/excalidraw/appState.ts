@@ -42,6 +42,10 @@ export const getDefaultAppState = (): Omit<
     currentItemTextColor: DEFAULT_ELEMENT_PROPS.strokeColor,
     currentItemRoundness: "round",
     currentItemArrowType: ARROW_TYPE.round,
+    // flow: remembered corner radius / container text padding for new elements.
+    // Undefined means "not remembered" — the derived default stands.
+    currentItemCornerRadius: undefined,
+    currentItemPadding: undefined,
     currentItemStrokeStyle: DEFAULT_ELEMENT_PROPS.strokeStyle,
     currentItemStrokeWidth: DEFAULT_ELEMENT_PROPS.strokeWidth,
     currentItemTextAlign: DEFAULT_TEXT_ALIGN,
@@ -168,6 +172,8 @@ const APP_STATE_STORAGE_CONF = (<
     export: false,
     server: false,
   },
+  currentItemCornerRadius: { browser: true, export: false, server: false },
+  currentItemPadding: { browser: true, export: false, server: false },
   currentItemOpacity: { browser: true, export: false, server: false },
   currentItemRoughness: { browser: true, export: false, server: false },
   currentItemStartArrowhead: { browser: true, export: false, server: false },
