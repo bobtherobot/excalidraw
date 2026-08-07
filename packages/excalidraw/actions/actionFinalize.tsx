@@ -182,10 +182,17 @@ export const actionFinalize = register({
         editingTextElement: null,
         startBoundElement: null,
         suggestedBindings: [],
+        // flow: selecting what you just drew is independent of whether the
+        // tool stays active, same as the sibling shape/linear sites in
+        // components/App.tsx (a9dcdb6f). Upstream conflates both behaviours
+        // behind `activeTool.locked` here too; flow keeps the tool
+        // permanently locked (see src/ui/toolbar/useToolOverride.ts), so
+        // leaving this gated meant a line/arrow finished via this action
+        // (e.g. an elbow arrow, which auto-finalizes here on its second
+        // point without ever passing through App.tsx's own click-continuation
+        // selection code) was never selected.
         selectedElementIds:
-          multiPointElement &&
-          !appState.activeTool.locked &&
-          appState.activeTool.type !== "freedraw"
+          multiPointElement && appState.activeTool.type !== "freedraw"
             ? {
                 ...appState.selectedElementIds,
                 [multiPointElement.id]: true,
