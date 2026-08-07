@@ -9123,8 +9123,18 @@ class App extends React.Component<AppProps, AppState> {
               selectedLinearElement: new LinearElementEditor(newElement),
             }));
           } else {
+            // flow: keep the tool active, but still select what was just drawn.
+            // Upstream conflates the two behaviours behind `locked`; see the
+            // sibling shape case below.
             this.setState((prevState) => ({
               newElement: null,
+              selectedElementIds: makeNextSelectedElementIds(
+                {
+                  ...prevState.selectedElementIds,
+                  [newElement.id]: true,
+                },
+                prevState,
+              ),
             }));
           }
           // so that the scene gets rendered again to display the newly drawn linear as well
@@ -9635,7 +9645,12 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
-      if (!activeTool.locked && activeTool.type !== "freedraw" && newElement) {
+      // flow: selecting what you just drew is independent of whether the tool
+      // stays active. Upstream gates both behaviours on `activeTool.locked`;
+      // flow keeps the tool permanently locked (see src/ui/toolbar/
+      // useToolOverride.ts), so leaving this gated would mean a drawn element
+      // is never selected.
+      if (activeTool.type !== "freedraw" && newElement) {
         this.setState((prevState) => ({
           selectedElementIds: makeNextSelectedElementIds(
             {
