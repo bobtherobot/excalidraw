@@ -949,6 +949,7 @@ class App extends React.Component<AppProps, AppState> {
     return props.interaction !== false;
   }
 
+<<<<<<< ours
   /**
    * Whether the browser's own zoom (ctrl/cmd + wheel, pinch, keyboard
    * shortcuts) stays available over the non-interactive editor.
@@ -959,6 +960,51 @@ class App extends React.Component<AppProps, AppState> {
   ): boolean {
     if (typeof props.interaction === "object" && props.interaction !== null) {
       return props.interaction.enabled?.browserZoom === true;
+=======
+    if (excalidrawAPI) {
+      const api: ExcalidrawImperativeAPI = {
+        updateScene: this.updateScene,
+        updateLibrary: this.library.updateLibrary,
+        addFiles: this.addFiles,
+        resetScene: this.resetScene,
+        getSceneElementsIncludingDeleted: this.getSceneElementsIncludingDeleted,
+        history: {
+          clear: this.resetHistory,
+        },
+        scrollToContent: this.scrollToContent,
+        getSceneElements: this.getSceneElements,
+        getAppState: () => this.state,
+        getFiles: () => this.files,
+        getName: this.getName,
+        registerAction: (action: Action) => {
+          this.actionManager.registerAction(action);
+        },
+        executeAction: (name: string, value: unknown = null) => {
+          const action = (this.actionManager.actions as Record<string, Action>)[name];
+          if (action) {
+            this.actionManager.executeAction(action, "api", value as never);
+          }
+        },
+        refresh: this.refresh,
+        setToast: this.setToast,
+        id: this.id,
+        setActiveTool: this.setActiveTool,
+        setCursor: this.setCursor,
+        resetCursor: this.resetCursor,
+        updateFrameRendering: this.updateFrameRendering,
+        toggleSidebar: this.toggleSidebar,
+        onChange: (cb) => this.onChangeEmitter.on(cb),
+        onPointerDown: (cb) => this.onPointerDownEmitter.on(cb),
+        onPointerUp: (cb) => this.onPointerUpEmitter.on(cb),
+        onScrollChange: (cb) => this.onScrollChangeEmitter.on(cb),
+        onUserFollow: (cb) => this.onUserFollowEmitter.on(cb),
+      } as const;
+      if (typeof excalidrawAPI === "function") {
+        excalidrawAPI(api);
+      } else {
+        console.error("excalidrawAPI should be a function!");
+      }
+>>>>>>> theirs
     }
     return false;
   }
@@ -4629,7 +4675,74 @@ class App extends React.Component<AppProps, AppState> {
         }
       }
 
+<<<<<<< ours
       await this.insertClipboardContent(data, filesList, isPlainPaste);
+=======
+      if (data.errorMessage) {
+        this.setState({ errorMessage: data.errorMessage });
+      } else if (data.spreadsheet && !isPlainPaste) {
+        this.setState({
+          pasteDialog: {
+            data: data.spreadsheet,
+            shown: true,
+          },
+        });
+      } else if (data.elements) {
+        const elements = (
+          data.programmaticAPI
+            ? convertToExcalidrawElements(
+                data.elements as ExcalidrawElementSkeleton[],
+              )
+            : data.elements
+        ) as readonly ExcalidrawElement[];
+        // TODO remove formatting from elements if isPlainPaste
+        this.addElementsFromPasteOrLibrary({
+          elements,
+          files: data.files || null,
+          position: "cursor",
+          retainSeed: isPlainPaste,
+        });
+      } else if (data.text) {
+        if (data.text && isMaybeMermaidDefinition(data.text)) {
+          const api = await import("@excalidraw/mermaid-to-excalidraw");
+
+          try {
+            const { elements: skeletonElements, files = {} } =
+              await api.parseMermaidToExcalidraw(data.text);
+
+            const elements = convertToExcalidrawElements(skeletonElements, {
+              regenerateIds: true,
+            });
+
+            this.addElementsFromPasteOrLibrary({
+              elements,
+              files,
+              position: "cursor",
+            });
+
+            return;
+          } catch (err: any) {
+            console.warn(
+              `parsing pasted text as mermaid definition failed: ${err.message}`,
+            );
+          }
+        }
+
+        const nonEmptyLines = normalizeEOL(data.text)
+          .split(/\n+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+        const embbeddableUrls = nonEmptyLines
+          .map((str) => maybeParseEmbedSrc(str))
+          .filter((string) => {
+            return (
+              embeddableURLValidator(string, this.props.validateEmbeddable) &&
+              (/^(http|https):\/\/[^\s/$.?#].[^\s]*$/.test(string) ||
+                getEmbedLink(string)?.type === "video")
+            );
+          });
+>>>>>>> theirs
 
       this.setActiveTool(
         { type: this.state.preferredSelectionTool.type },
@@ -4852,7 +4965,8 @@ class App extends React.Component<AppProps, AppState> {
     const textElementProps = {
       x,
       y,
-      strokeColor: this.state.currentItemStrokeColor,
+      // text color is independent of stroke (wimp fork)
+      strokeColor: this.state.currentItemTextColor,
       backgroundColor: this.state.currentItemBackgroundColor,
       fillStyle: this.state.currentItemFillStyle,
       strokeWidth: this.getCurrentItemStrokeWidth("text"),
@@ -5198,6 +5312,27 @@ class App extends React.Component<AppProps, AppState> {
        * @default CaptureUpdateAction.EVENTUALLY
        */
       captureUpdate?: SceneData["captureUpdate"];
+      /**
+       * Commit changes made by preceding `EVENTUALLY` updates as part of this
+       * capture.
+       *
+       * `updateScene` normally routes the payload through
+       * `filterUncomittedElements`, which rewrites any element whose live
+       * version has run ahead of the store snapshot back to the snapshot — a
+       * guard against half-capturing a local action that is still in flight.
+       * When this write *is* that action finishing (the release ending a drag
+       * whose frames were written with `EVENTUALLY`), the payload is
+       * authoritative and must be captured whole, so the filter is skipped.
+       *
+       * Skips the filter for both `IMMEDIATELY` and `NEVER` — the enclosing
+       * block runs, and `nextCommittedElements` is shared, for any
+       * `captureUpdate` other than `EVENTUALLY`. Only set it on a write that
+       * closes a deferred `EVENTUALLY` sequence; passing it alongside `NEVER`
+       * would write uncommitted elements straight into the snapshot.
+       *
+       * @default false
+       */
+      commitDeferredChanges?: boolean;
     }) => {
       const { elements, appState, collaborators, captureUpdate } = sceneData;
 
@@ -5210,11 +5345,36 @@ class App extends React.Component<AppProps, AppState> {
             })
           : undefined;
 
+<<<<<<< ours
         this.store.scheduleMicroAction({
           action: captureUpdate,
           elements: nextElements,
           appState: observedAppState,
         });
+=======
+        const nextCommittedElements = sceneData.elements
+          ? sceneData.commitDeferredChanges
+            ? arrayToMap(nextElements)
+            : this.store.filterUncomittedElements(
+                this.scene.getElementsMapIncludingDeleted(), // Only used to detect uncomitted local elements
+                arrayToMap(nextElements), // We expect all (already reconciled) elements
+              )
+          : prevCommittedElements;
+
+        // WARN: store action always performs deep clone of changed elements, for ephemeral remote updates (i.e. remote dragging, resizing, drawing) we might consider doing something smarter
+        // do NOT schedule store actions (execute after re-render), as it might cause unexpected concurrency issues if not handled well
+        if (sceneData.captureUpdate === CaptureUpdateAction.IMMEDIATELY) {
+          this.store.captureIncrement(
+            nextCommittedElements,
+            nextCommittedAppState,
+          );
+        } else if (sceneData.captureUpdate === CaptureUpdateAction.NEVER) {
+          this.store.updateSnapshot(
+            nextCommittedElements,
+            nextCommittedAppState,
+          );
+        }
+>>>>>>> theirs
       }
 
       if (appState) {
@@ -6830,6 +6990,7 @@ class App extends React.Component<AppProps, AppState> {
       y: newTextElementPosition.y,
     });
 
+<<<<<<< ours
     // container has higher priority. Only add to frame if container is in the same frame.
     const frameId =
       topLayerFrame &&
@@ -6860,6 +7021,32 @@ class App extends React.Component<AppProps, AppState> {
         verticalAlign:
           arrowEndpointBinding?.verticalAlign ??
           (parentCenterPosition
+=======
+    const element = existingTextElement
+      ? existingTextElement
+      : newTextElement({
+          x: parentCenterPosition
+            ? parentCenterPosition.elementCenterX
+            : sceneX,
+          y: parentCenterPosition
+            ? parentCenterPosition.elementCenterY
+            : sceneY,
+          // text color is independent of stroke (wimp fork)
+          strokeColor: this.state.currentItemTextColor,
+          backgroundColor: this.state.currentItemBackgroundColor,
+          fillStyle: this.state.currentItemFillStyle,
+          strokeWidth: this.state.currentItemStrokeWidth,
+          strokeStyle: this.state.currentItemStrokeStyle,
+          roughness: this.state.currentItemRoughness,
+          opacity: this.state.currentItemOpacity,
+          text: "",
+          fontSize,
+          fontFamily,
+          textAlign: parentCenterPosition
+            ? "center"
+            : this.state.currentItemTextAlign,
+          verticalAlign: parentCenterPosition
+>>>>>>> theirs
             ? VERTICAL_ALIGN.MIDDLE
             : DEFAULT_VERTICAL_ALIGN),
         containerId: shouldBindToContainer ? container?.id : undefined,
@@ -10154,9 +10341,17 @@ class App extends React.Component<AppProps, AppState> {
                     null,
               startArrowhead,
               endArrowhead,
+              // flow: new arrows inherit the default arrowhead size factors.
+              startArrowheadSize: this.state.currentItemStartArrowheadSize,
+              endArrowheadSize: this.state.currentItemEndArrowheadSize,
               locked: false,
               frameId: topLayerFrame ? topLayerFrame.id : null,
               elbowed: this.state.currentItemArrowType === ARROW_TYPE.elbow,
+              // flow: only an elbow arrow has bends to soften.
+              cornerRadius:
+                this.state.currentItemArrowType === ARROW_TYPE.elbow
+                  ? this.state.currentItemCornerRadius
+                  : undefined,
               fixedSegments:
                 this.state.currentItemArrowType === ARROW_TYPE.elbow
                   ? []
@@ -10340,6 +10535,15 @@ class App extends React.Component<AppProps, AppState> {
       roughness: this.state.currentItemRoughness,
       opacity: this.state.currentItemOpacity,
       roundness: this.getCurrentItemRoundness(elementType),
+      // flow: a remembered corner radius applies to rectangles and diamonds
+      // only — an ellipse has no corners to round. Padding applies to any shape
+      // container, since it may later be given bound text. Both stay optional:
+      // undefined leaves the element's derived default in place.
+      cornerRadius:
+        elementType === "rectangle" || elementType === "diamond"
+          ? this.state.currentItemCornerRadius
+          : undefined,
+      padding: this.state.currentItemPadding,
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
     } as const;
@@ -11308,7 +11512,11 @@ class App extends React.Component<AppProps, AppState> {
                 this.state.selectionElement,
                 this.scene.getNonDeletedElementsMap(),
                 false,
+<<<<<<< ours
                 this.state.boxSelectionMode,
+=======
+                this.state.selectionMode, // flow: marquee touch vs enclose
+>>>>>>> theirs
               )
             : [];
 
@@ -11772,9 +11980,25 @@ class App extends React.Component<AppProps, AppState> {
               () => this.cursor.reset(),
             );
           } else {
+<<<<<<< ours
             this.setState({
               newElement: null,
             });
+=======
+            // flow: keep the tool active, but still select what was just drawn.
+            // Upstream conflates the two behaviours behind `locked`; see the
+            // sibling shape case below.
+            this.setState((prevState) => ({
+              newElement: null,
+              selectedElementIds: makeNextSelectedElementIds(
+                {
+                  ...prevState.selectedElementIds,
+                  [newElement.id]: true,
+                },
+                prevState,
+              ),
+            }));
+>>>>>>> theirs
           }
           // so that the scene gets rendered again to display the newly drawn linear as well
           this.scene.triggerUpdate();
@@ -12306,6 +12530,7 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
+<<<<<<< ours
       const selectedTextEditingContainer =
         this.getSelectedTextEditingContainerAtPosition(hitElement, sceneCoords);
 
@@ -12340,6 +12565,14 @@ class App extends React.Component<AppProps, AppState> {
         activeTool.type !== "freedraw" &&
         newElement
       ) {
+=======
+      // flow: selecting what you just drew is independent of whether the tool
+      // stays active. Upstream gates both behaviours on `activeTool.locked`;
+      // flow keeps the tool permanently locked (see src/ui/toolbar/
+      // useToolOverride.ts), so leaving this gated would mean a drawn element
+      // is never selected.
+      if (activeTool.type !== "freedraw" && newElement) {
+>>>>>>> theirs
         this.setState((prevState) => ({
           selectedElementIds: makeNextSelectedElementIds(
             {

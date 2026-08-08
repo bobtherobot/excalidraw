@@ -403,7 +403,14 @@ export const actionFinalize = register<FormData>({
         frameToHighlight: null,
         selectedElementIds: isDrawShapeTool
           ? {}
-          : element && !isToolLocked && appState.activeTool.type !== "freedraw"
+          : // flow: selecting what you just drew is independent of whether the
+            // tool stays active, same as the sibling shape/linear sites in
+            // components/App.tsx. Upstream conflates both behaviours behind
+            // the tool lock here too; flow keeps the tool permanently locked
+            // (see src/ui/toolbar/useToolOverride.ts), so leaving this gated
+            // meant an element finished via this action (e.g. an elbow arrow,
+            // which auto-finalizes here on its second point) was never selected.
+            element && appState.activeTool.type !== "freedraw"
           ? {
               ...appState.selectedElementIds,
               [element.id]: true,

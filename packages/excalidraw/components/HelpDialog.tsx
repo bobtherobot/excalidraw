@@ -243,7 +243,10 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
               shortcuts={[getShortcutKey("Enter"), getShortcutKey("Escape")]}
               isOr={true}
             />
-            <Shortcut label={t("toolBar.lock")} shortcuts={[KEYS.Q]} />
+            {/* flow: `Q` no longer toggles the tool lock -- flow keeps it
+                permanently on and swallows the shortcut (see
+                src/ui/toolbar/useToolOverride.ts) -- so this row would
+                describe a shortcut that does nothing. */}
             <Shortcut
               label={t("helpDialog.preventBinding")}
               shortcuts={[getShortcutKey("CtrlOrCmd")]}

@@ -439,7 +439,12 @@ const restoreElementWithProperties = <
     isDeleted: element.isDeleted ?? false,
     id: element.id || randomId(),
     fillStyle: element.fillStyle || DEFAULT_ELEMENT_PROPS.fillStyle,
-    strokeWidth: element.strokeWidth || DEFAULT_ELEMENT_PROPS.strokeWidth,
+    // flow: `??`, not `||`. flow's stroke slider starts at 0 ("no outline"),
+    // and `0 || 2` silently rewrote every legitimate 0 to the default — losing
+    // it on paste, on file open, and on any other restore. Upstream never hit
+    // this because its own picker only offers 1/2/4. Matches how every sibling
+    // field on this object already treats a present-but-falsy value.
+    strokeWidth: element.strokeWidth ?? DEFAULT_ELEMENT_PROPS.strokeWidth,
     strokeStyle: element.strokeStyle ?? DEFAULT_ELEMENT_PROPS.strokeStyle,
     roughness: element.roughness ?? DEFAULT_ELEMENT_PROPS.roughness,
     opacity:
@@ -466,6 +471,12 @@ const restoreElementWithProperties = <
             : ROUNDNESS.PROPORTIONAL_RADIUS,
         }
       : null,
+    // flow: preserve the explicit corner radius (Transform panel) across
+    // save/reload; undefined leaves the roundness presets in charge.
+    cornerRadius: element.cornerRadius,
+    // flow: preserve the per-container text padding (Transform panel); undefined
+    // falls back to BOUND_TEXT_PADDING.
+    padding: element.padding,
     boundElements: element.boundElementIds
       ? element.boundElementIds.map((id) => ({ type: "arrow", id }))
       : element.boundElements ?? [],
@@ -586,6 +597,8 @@ export const restoreElement = (
     case "draw":
       const startArrowhead = normalizeArrowhead(element.startArrowhead);
       const endArrowhead = normalizeArrowhead(element.endArrowhead);
+      // flow: preserve per-end arrowhead size factors across restore.
+      const { startArrowheadSize, endArrowheadSize } = element;
       let x = element.x;
       let y = element.y;
       let points = restoreLinearElementPoints(
@@ -610,6 +623,8 @@ export const restoreElement = (
         endBinding: null,
         startArrowhead,
         endArrowhead,
+        startArrowheadSize,
+        endArrowheadSize,
         points,
         x,
         y,
@@ -662,6 +677,8 @@ export const restoreElement = (
         ),
         startArrowhead,
         endArrowhead,
+        startArrowheadSize,
+        endArrowheadSize,
         points,
         x: x ?? 0,
         y: y ?? 0,

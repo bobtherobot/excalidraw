@@ -506,6 +506,7 @@ const LayerUI = ({
           {appState.errorMessage}
         </ErrorDialog>
       )}
+<<<<<<< ours
       {defaultUIEnabled &&
         eyeDropperState &&
         editorInterface.formFactor !== "phone" && (
@@ -530,6 +531,29 @@ const LayerUI = ({
               if (selectedElements.length) {
                 for (const element of selectedElements) {
                   mutateElement(element, arrayToMap(elements), {
+=======
+      {eyeDropperState && !device.editor.isMobile && (
+        <EyeDropper
+          colorPickerType={eyeDropperState.colorPickerType}
+          onCancel={() => {
+            setEyeDropperState(null);
+          }}
+          onChange={(colorPickerType, color, selectedElements, { altKey }) => {
+            if (
+              colorPickerType !== "elementBackground" &&
+              colorPickerType !== "elementStroke" &&
+              colorPickerType !== "elementText"
+            ) {
+              return;
+            }
+
+            if (selectedElements.length) {
+              for (const element of selectedElements) {
+                mutateElement(
+                  element,
+                  {
+                    // elementText writes strokeColor (text color) — wimp fork
+>>>>>>> theirs
                     [altKey && eyeDropperState.swapPreviewOnAlt
                       ? colorPickerType === "elementBackground"
                         ? "strokeColor"
@@ -553,10 +577,27 @@ const LayerUI = ({
               setEyeDropperState((state) => {
                 return state?.keepOpenOnAlt && event.altKey ? state : null;
               });
+<<<<<<< ours
               eyeDropperState?.onSelect?.(color, event);
             }}
           />
         )}
+=======
+            } else if (colorPickerType === "elementText") {
+              setAppState({ currentItemTextColor: color });
+            } else {
+              setAppState({ currentItemStrokeColor: color });
+            }
+          }}
+          onSelect={(color, event) => {
+            setEyeDropperState((state) => {
+              return state?.keepOpenOnAlt && event.altKey ? state : null;
+            });
+            eyeDropperState?.onSelect?.(color, event);
+          }}
+        />
+      )}
+>>>>>>> theirs
       {appState.openDialog?.name === "help" && (
         <HelpDialog
           onClose={() => {

@@ -353,6 +353,15 @@ export interface AppState {
    * `bindingPreference` and keyboard modifiers (ctrl/alt)
    */
   isBindingEnabled: boolean;
+  /** flow addition: persistent arrow-binding lock honored by the
+   *  `isBindingEnabled` selector. "on" forces binding, "off" prevents it,
+   *  "auto"/undefined keeps Excalidraw's default (transient) behavior. */
+  bindingMode?: "on" | "off" | "auto";
+  laserColor?: string; // flow: global laser-pointer trail color
+  /** flow addition: marquee drag-selection mode. "enclose" (default) selects
+   *  only elements the selection rectangle fully contains; "touch" selects any
+   *  element the selection rectangle intersects. */
+  selectionMode?: "enclose" | "touch";
   /** user box selection preference; defaults to "contain" when unset */
   boxSelectionMode: BoxSelectionMode;
   /** user arrow binding preference */
@@ -416,6 +425,8 @@ export interface AppState {
   exportWithDarkMode: boolean;
   exportScale: number;
   currentItemStrokeColor: string;
+  /** Color for text elements, independent of stroke (wimp fork). */
+  currentItemTextColor: string;
   currentItemBackgroundColor: string;
   currentItemFillStyle: ExcalidrawElement["fillStyle"];
   currentItemStrokeWidthKey: StrokeWidthKey;
@@ -428,9 +439,17 @@ export interface AppState {
   currentItemTextAlign: TextAlign;
   currentItemStartArrowhead: Arrowhead | null;
   currentItemEndArrowhead: Arrowhead | null;
+  // flow addition: default arrowhead size factors (× strokeWidth) for new arrows.
+  currentItemStartArrowheadSize: number;
+  currentItemEndArrowheadSize: number;
   currentHoveredFontFamily: FontFamilyValues | null;
   currentItemRoundness: StrokeRoundness;
   currentItemArrowType: "sharp" | "round" | "elbow";
+  /** flow: remembered corner radius for new rectangles/diamonds and elbow
+   *  arrows. Undefined leaves the derived default in place. */
+  currentItemCornerRadius: number | undefined;
+  /** flow: remembered bound-text padding for new shape containers. */
+  currentItemPadding: number | undefined;
   viewBackgroundColor: string;
   scrollX: number;
   scrollY: number;
@@ -446,6 +465,7 @@ export interface AppState {
     | "canvasBackground"
     | "elementBackground"
     | "elementStroke"
+    | "elementText"
     | "fontFamily"
     | "compactTextProperties"
     | "compactStrokeStyles"
@@ -1259,6 +1279,13 @@ export interface ExcalidrawImperativeAPI {
   setViewport: InstanceType<typeof App>["viewport"]["setViewport"];
   getViewportOffsets: InstanceType<typeof App>["viewport"]["getOffsets"];
   registerAction: (action: Action) => void;
+  /**
+   * flow addition: dispatch a registered Excalidraw action by name (e.g.
+   * "sendToBack", "group", "alignLeft", "changeArrowType"). Runs the action's
+   * perform against the current selection with correct history capture — used by
+   * flow's Edit menu and panels to reuse Excalidraw's action logic.
+   */
+  executeAction: (name: string, value?: unknown) => void;
   refresh: InstanceType<typeof App>["refresh"];
   setToast: InstanceType<typeof App>["setToast"];
   addFiles: (data: BinaryFileData[]) => void;

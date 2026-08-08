@@ -63,6 +63,7 @@ export type ActionName =
   | "midpointSnapping"
   | "stats"
   | "changeStrokeColor"
+  | "changeTextColor"
   | "changeBackgroundColor"
   | "changeBucketFillBackgroundColor"
   | "changeFillStyle"

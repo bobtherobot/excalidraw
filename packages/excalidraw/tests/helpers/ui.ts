@@ -20,8 +20,16 @@ import {
   isFreeDrawElement,
   isTextElement,
   isFrameLikeElement,
+  isImageElement,
 } from "@excalidraw/element";
+import { getElementAbsoluteCoords } from "@excalidraw/element";
+// flow: the harness targets the real border segment resizeTest walks (see the
+// isSideHandle branch below); getSelectionBorders is exported for that purpose.
+import { getSelectionBorders } from "@excalidraw/element";
 import { KEYS, arrayToMap, getLineHeight } from "@excalidraw/common";
+import { SIDE_RESIZING_THRESHOLD } from "@excalidraw/common";
+import { getTextEditor } from "../queries/dom";
+import { createTestHook } from "../../components/App";
 
 import type { GlobalPoint, LocalPoint, Radians } from "@excalidraw/math";
 
@@ -265,8 +273,11 @@ export class Pointer {
   }
 
   downAt(x = this.clientX, y = this.clientY) {
-    this.clientX = x;
-    this.clientY = y;
+    // flow: a real pointer always moves to a location before pressing there, and
+    // the app relies on that move to compute hover state (e.g. a linear
+    // element's hoverPointIndex, which decides point-drag vs resize). Teleport-
+    // and-press produced hover state no browser can reproduce.
+    this.moveTo(x, y);
     fireEvent.pointerDown(GlobalTestState.interactiveCanvas, this.getEvent());
   }
 
@@ -343,6 +354,13 @@ export class Pointer {
 
 const mouse = new Pointer("mouse");
 
+/** flow: the four directions the app resizes via border proximity rather than a
+ *  handle rect (see getOmitSidesForDevice / DEFAULT_OMIT_SIDES). */
+const isSideHandle = (
+  handle: TransformHandleType,
+): handle is "n" | "e" | "s" | "w" =>
+  handle === "n" || handle === "e" || handle === "s" || handle === "w";
+
 const transform = (
   element: ExcalidrawElement | ExcalidrawElement[],
   handle: TransformHandleType,
@@ -362,6 +380,36 @@ const transform = (
     });
   });
   let handleCoords: TransformHandle | undefined;
+  // flow: n/e/s/w are NOT real handles in the app — resizeTest passes
+  // getOmitSidesForDevice(), which omits all four. Side resizing is a separate
+  // line-proximity test against the selection borders. Deriving the click point
+  // from a phantom side-handle rect therefore tested geometry production never
+  // uses, and broke the moment the selection-chrome margin changed. Target the
+  // real band instead: the midpoint of the same border segment resizeTest walks.
+  if (elements.length === 1 && isSideHandle(handle)) {
+    const element = elements[0];
+    const [x1, y1, x2, y2, cx, cy] = getElementAbsoluteCoords(
+      element,
+      arrayToMap(h.elements),
+    );
+    const spacing = isImageElement(element)
+      ? 0
+      : SIDE_RESIZING_THRESHOLD / h.state.zoom.value;
+    const [from, to] = getSelectionBorders(
+      pointFrom(x1 - spacing, y1 - spacing),
+      pointFrom(x2 + spacing, y2 + spacing),
+      pointFrom(cx, cy),
+      element.angle,
+    )[handle];
+
+    Keyboard.withModifierKeys(keyboardModifiers, () => {
+      mouse.reset();
+      mouse.down((from[0] + to[0]) / 2, (from[1] + to[1]) / 2);
+      mouse.move(mouseMove[0], mouseMove[1]);
+      mouse.up();
+    });
+    return;
+  }
   if (elements.length === 1) {
     handleCoords = getTransformHandles(
       elements[0],

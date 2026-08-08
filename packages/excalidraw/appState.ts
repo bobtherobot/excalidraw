@@ -7,6 +7,7 @@ import {
   DEFAULT_ELEMENT_STROKE_WIDTH_KEY,
   DEFAULT_TEXT_ALIGN,
   DEFAULT_GRID_SIZE,
+  DEFAULT_LASER_COLOR,
   EXPORT_SCALES,
   STATS_PANELS,
   THEME,
@@ -30,6 +31,8 @@ export const getDefaultAppState = (): Omit<
     collaborators: new Map(),
     currentItemBackgroundColor: DEFAULT_ELEMENT_PROPS.backgroundColor,
     currentItemEndArrowhead: "arrow",
+    // flow: default arrowhead size factor (× strokeWidth); keep = DEFAULT_ARROWHEAD_SIZE_FACTOR.
+    currentItemEndArrowheadSize: 6,
     currentItemFillStyle: DEFAULT_ELEMENT_PROPS.fillStyle,
     currentItemFontFamily: DEFAULT_FONT_FAMILY,
     currentItemFontSize: DEFAULT_FONT_SIZE,
@@ -37,9 +40,16 @@ export const getDefaultAppState = (): Omit<
     currentItemRoughness: DEFAULT_ELEMENT_PROPS.roughness,
     currentItemStrokeVariability: "constant",
     currentItemStartArrowhead: null,
+    currentItemStartArrowheadSize: 6,
     currentItemStrokeColor: DEFAULT_ELEMENT_PROPS.strokeColor,
+    // flow: text color independent of stroke color.
+    currentItemTextColor: DEFAULT_ELEMENT_PROPS.strokeColor,
     currentItemRoundness: isTestEnv() ? "sharp" : "round",
     currentItemArrowType: ARROW_TYPE.round,
+    // flow: remembered corner radius / container text padding for new elements.
+    // Undefined means "not remembered" — the derived default stands.
+    currentItemCornerRadius: undefined,
+    currentItemPadding: undefined,
     currentItemStrokeStyle: DEFAULT_ELEMENT_PROPS.strokeStyle,
     currentItemStrokeWidthKey: DEFAULT_ELEMENT_STROKE_WIDTH_KEY,
     currentItemTextAlign: DEFAULT_TEXT_ALIGN,
@@ -74,6 +84,9 @@ export const getDefaultAppState = (): Omit<
     isBindingEnabled: true,
     bindingPreference: "enabled",
     isMidpointSnappingEnabled: true,
+    bindingMode: "auto", // flow: persistent arrow-binding lock (default = auto)
+    laserColor: DEFAULT_LASER_COLOR, // flow: global laser-pointer color
+    selectionMode: "enclose", // flow: marquee selection mode (default = enclose)
     defaultSidebarDockedPreference: false,
     isLoading: false,
     isResizing: false,
@@ -154,6 +167,8 @@ const APP_STATE_STORAGE_CONF = (<
   collaborators: { browser: false, export: false, server: false },
   currentItemBackgroundColor: { browser: true, export: false, server: false },
   currentItemEndArrowhead: { browser: true, export: false, server: false },
+  currentItemEndArrowheadSize: { browser: true, export: false, server: false },
+  currentItemStartArrowheadSize: { browser: true, export: false, server: false },
   currentItemFillStyle: { browser: true, export: false, server: false },
   currentItemFontFamily: { browser: true, export: false, server: false },
   currentItemFontSize: { browser: true, export: false, server: false },
@@ -167,6 +182,8 @@ const APP_STATE_STORAGE_CONF = (<
     export: false,
     server: false,
   },
+  currentItemCornerRadius: { browser: true, export: false, server: false },
+  currentItemPadding: { browser: true, export: false, server: false },
   currentItemOpacity: { browser: true, export: false, server: false },
   currentItemRoughness: { browser: true, export: false, server: false },
   currentItemStrokeVariability: {
@@ -176,6 +193,7 @@ const APP_STATE_STORAGE_CONF = (<
   },
   currentItemStartArrowhead: { browser: true, export: false, server: false },
   currentItemStrokeColor: { browser: true, export: false, server: false },
+  currentItemTextColor: { browser: true, export: false, server: false },
   currentItemStrokeStyle: { browser: true, export: false, server: false },
   currentItemStrokeWidthKey: { browser: true, export: false, server: false },
   currentItemTextAlign: { browser: true, export: false, server: false },
@@ -203,6 +221,13 @@ const APP_STATE_STORAGE_CONF = (<
   boxSelectionMode: { browser: true, export: false, server: false },
   bindingPreference: { browser: true, export: false, server: false },
   isMidpointSnappingEnabled: { browser: true, export: false, server: false },
+  // flow: persistence is owned by flow (localStorage flow.bindingMode) and
+  // re-applied on load, so Excalidraw itself keeps none of it.
+  bindingMode: { browser: false, export: false, server: false },
+  // flow: persistence owned by flow (localStorage flow.laserColor), re-applied on load.
+  laserColor: { browser: false, export: false, server: false },
+  // flow: persistence owned by flow (localStorage flow.selectionMode), re-applied on load.
+  selectionMode: { browser: false, export: false, server: false },
   defaultSidebarDockedPreference: {
     browser: true,
     export: false,

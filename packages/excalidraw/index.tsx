@@ -546,3 +546,19 @@ export function useExcalidrawStateValue(
 export { _useOnAppStateChange as useOnExcalidrawStateChange };
 
 export { applyDarkModeFilter, getStrokeWidthByKey };
+
+// flow addition: single-element resize used by the Transform sub-panel. Reuses
+// Excalidraw's own resize math (linear point scaling, bound-text reflow/rescale,
+// roundness) so numeric width/height edits match handle-drag behaviour.
+// Upstream moved this into @excalidraw/element; flow bundles that package, so
+// re-exporting it here keeps flow's single-package import seam intact.
+export { resizeSingleElement } from "@excalidraw/element";
+
+// flow addition: pure canvas-search match computation (drives AppState.searchMatches
+// from a host app without mounting the built-in SearchMenu sidebar).
+export { getSearchMatches } from "./searchMatches";
+export type {
+  SearchResult,
+  SearchMatchLine,
+  SearchMatchPreview,
+} from "./searchMatches";

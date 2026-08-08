@@ -15,9 +15,14 @@ import {
   BIND_MODE_TIMEOUT,
   DEFAULT_TRANSFORM_HANDLE_SPACING,
   FRAME_STYLE,
+<<<<<<< ours
   getFeatureFlag,
   invariant,
   shouldRotateWithDiscreteAngle,
+=======
+  LINEAR_SELECTION_SPACING,
+  SELECTION_SPACING,
+>>>>>>> theirs
   THEME,
 } from "@excalidraw/common";
 
@@ -994,8 +999,7 @@ const renderSelectionBorder = (
   const elementWidth = x2 - x1;
   const elementHeight = y2 - y1;
 
-  const padding =
-    elementProperties.padding ?? DEFAULT_TRANSFORM_HANDLE_SPACING * 2;
+  const padding = elementProperties.padding ?? SELECTION_SPACING;
 
   const linePadding = padding / appState.zoom.value;
   const lineWidth = 8 / appState.zoom.value;
@@ -1886,11 +1890,13 @@ const _renderInteractiveScene = ({
             activeEmbeddable:
               appState.activeEmbeddable?.element === element &&
               appState.activeEmbeddable.state === "active",
-            padding:
-              element.id === appState.croppingElementId ||
-              isImageElement(element)
-                ? 0
-                : undefined,
+            // flow: the border tracks the handles. Everything hugs the bounds
+            // except linear elements, whose handles are pushed clear of their
+            // own vertices (see LINEAR_SELECTION_SPACING) — a flush border
+            // there would leave the handles floating outside it.
+            padding: isLinearElement(element)
+              ? LINEAR_SELECTION_SPACING
+              : undefined,
           });
         }
       }
@@ -1970,6 +1976,7 @@ const _renderInteractiveScene = ({
           );
         }
       }
+<<<<<<< ours
     } else if (
       selectedElements.length > 1 &&
       !appState.isRotating &&
@@ -1979,6 +1986,12 @@ const _renderInteractiveScene = ({
         (DEFAULT_TRANSFORM_HANDLE_SPACING * 2) / appState.zoom.value;
       context.fillStyle = "#fff";
       const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
+=======
+    } else if (selectedElements.length > 1 && !appState.isRotating) {
+      const dashedLinePadding = SELECTION_SPACING / appState.zoom.value;
+      context.fillStyle = oc.white;
+      const [x1, y1, x2, y2] = getCommonBounds(selectedElements);
+>>>>>>> theirs
       const initialLineDash = context.getLineDash();
       context.setLineDash([2 / appState.zoom.value]);
       const lineWidth = context.lineWidth;
