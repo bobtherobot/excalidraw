@@ -39,7 +39,6 @@ import {
   pencilIcon,
 } from "./icons";
 
-<<<<<<< ours
 import { Island } from "./Island";
 
 import { getShapeActionPredicates } from "./shapeActionPredicates";
@@ -91,35 +90,6 @@ const AlignFieldset = ({
   showDistribute: boolean;
 }) => {
   const isRTL = document.documentElement.getAttribute("dir") === "rtl";
-=======
-  return (
-    (hasStrokeColor(appState.activeTool.type) &&
-      appState.activeTool.type !== "image" &&
-      // text uses the dedicated Text color control, not Stroke (wimp fork)
-      appState.activeTool.type !== "text" &&
-      commonSelectedType !== "image" &&
-      commonSelectedType !== "frame" &&
-      commonSelectedType !== "magicframe") ||
-    targetElements.some(
-      (element) => hasStrokeColor(element.type) && !isTextElement(element),
-    )
-  );
-};
-
-// wimp fork: the Text color control shows for the text tool, selected text
-// elements, or containers with a bound text label (so its label can be recolored).
-export const canChangeTextColor = (
-  appState: UIAppState,
-  targetElements: ExcalidrawElement[],
-) => {
-  return (
-    appState.activeTool.type === "text" ||
-    targetElements.some(
-      (element) => isTextElement(element) || hasBoundTextElement(element),
-    )
-  );
-};
->>>>>>> theirs
 
   return (
     <fieldset>
@@ -195,22 +165,9 @@ export const SelectedShapeActions = ({
   }
 
   return (
-<<<<<<< ours
     <div className="selected-shape-actions">
       <div>{predicates.strokeColor && renderAction("changeStrokeColor")}</div>
       {predicates.backgroundColor && (
-=======
-    <div className="panelColumn">
-      <div>
-        {canChangeTextColor(appState, targetElements) &&
-          renderAction("changeTextColor")}
-      </div>
-      <div>
-        {canChangeStrokeColor(appState, targetElements) &&
-          renderAction("changeStrokeColor")}
-      </div>
-      {canChangeBackgroundColor(appState, targetElements) && (
->>>>>>> theirs
         <div>{renderAction("changeBackgroundColor")}</div>
       )}
       {predicates.fill && renderAction("changeFillStyle")}

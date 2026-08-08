@@ -710,6 +710,10 @@ const CARDINALITY_MARKER_SIZE = 20;
 const CROWFOOT_ARROWHEAD_SIZE = 15;
 
 /** @returns number in pixels */
+// flow: default arrowhead-size factor (× strokeWidth) for elements without an
+// explicit per-end size. Keep in sync with the Stroke panel's slider default.
+export const DEFAULT_ARROWHEAD_SIZE_FACTOR = 6;
+
 export const getArrowheadSize = (arrowhead: Arrowhead): number => {
   switch (arrowhead) {
     case "arrow":
@@ -808,7 +812,14 @@ export const getArrowheadPoints = (
   const nx = (x2 - x1) / distance;
   const ny = (y2 - y1) / distance;
 
-  const size = getArrowheadSize(arrowhead);
+  // flow: arrowhead size is a multiple of the element's stroke width (a
+  // per-end factor stored on the element; undefined → the default factor), so
+  // heads scale with line thickness. Replaces the fixed per-type getArrowheadSize.
+  const sizeFactor =
+    (position === "start"
+      ? element.startArrowheadSize
+      : element.endArrowheadSize) ?? DEFAULT_ARROWHEAD_SIZE_FACTOR;
+  const size = element.strokeWidth * sizeFactor;
 
   let length = 0;
 

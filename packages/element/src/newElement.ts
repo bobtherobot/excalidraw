@@ -155,6 +155,15 @@ const _newElementBase = <T extends ExcalidrawElement>(
     link,
     locked,
     customData: rest.customData,
+    // flow: this base constructor otherwise drops any opt not explicitly
+    // named above, so a `cornerRadius`/`padding` passed at creation (see
+    // App.tsx's `baseElementAttributes` and the `newArrowElement` call) was
+    // silently discarded. Every element type built on this base spreads it
+    // first and may override afterward, so this single pass-through covers
+    // generic shapes and — since neither `newArrowElement` nor
+    // `newLinearElement` override these two keys — arrows too.
+    cornerRadius: rest.cornerRadius,
+    padding: rest.padding,
   };
   return element;
 };
@@ -523,6 +532,9 @@ export const newArrowElement = <T extends boolean>(
     type: ExcalidrawArrowElement["type"];
     startArrowhead?: Arrowhead | null;
     endArrowhead?: Arrowhead | null;
+    // flow: per-end arrowhead size factor (× strokeWidth) for new arrows.
+    startArrowheadSize?: number;
+    endArrowheadSize?: number;
     points?: ExcalidrawArrowElement["points"];
     elbowed?: T;
     fixedSegments?: ExcalidrawElbowArrowElement["fixedSegments"] | null;
@@ -538,6 +550,8 @@ export const newArrowElement = <T extends boolean>(
       endBinding: null,
       startArrowhead: opts.startArrowhead || null,
       endArrowhead: opts.endArrowhead || null,
+      startArrowheadSize: opts.startArrowheadSize,
+      endArrowheadSize: opts.endArrowheadSize,
       elbowed: true,
       fixedSegments: opts.fixedSegments || [],
       startIsSpecial: false,
@@ -552,6 +566,8 @@ export const newArrowElement = <T extends boolean>(
     endBinding: null,
     startArrowhead: opts.startArrowhead || null,
     endArrowhead: opts.endArrowhead || null,
+    startArrowheadSize: opts.startArrowheadSize,
+    endArrowheadSize: opts.endArrowheadSize,
     elbowed: false,
   } as T extends true
     ? NonDeleted<ExcalidrawElbowArrowElement>

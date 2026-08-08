@@ -15,14 +15,11 @@ import {
   BIND_MODE_TIMEOUT,
   DEFAULT_TRANSFORM_HANDLE_SPACING,
   FRAME_STYLE,
-<<<<<<< ours
   getFeatureFlag,
   invariant,
   shouldRotateWithDiscreteAngle,
-=======
   LINEAR_SELECTION_SPACING,
   SELECTION_SPACING,
->>>>>>> theirs
   THEME,
 } from "@excalidraw/common";
 
@@ -1976,22 +1973,16 @@ const _renderInteractiveScene = ({
           );
         }
       }
-<<<<<<< ours
     } else if (
       selectedElements.length > 1 &&
       !appState.isRotating &&
       !selectedElements.some((el) => el.locked)
     ) {
-      const dashedLinePadding =
-        (DEFAULT_TRANSFORM_HANDLE_SPACING * 2) / appState.zoom.value;
+      // flow: selection chrome hugs element bounds (SELECTION_SPACING = 0)
+      // instead of upstream's DEFAULT_TRANSFORM_HANDLE_SPACING * 2.
+      const dashedLinePadding = SELECTION_SPACING / appState.zoom.value;
       context.fillStyle = "#fff";
       const [x1, y1, x2, y2] = getCommonBounds(selectedElements, elementsMap);
-=======
-    } else if (selectedElements.length > 1 && !appState.isRotating) {
-      const dashedLinePadding = SELECTION_SPACING / appState.zoom.value;
-      context.fillStyle = oc.white;
-      const [x1, y1, x2, y2] = getCommonBounds(selectedElements);
->>>>>>> theirs
       const initialLineDash = context.getLineDash();
       context.setLineDash([2 / appState.zoom.value]);
       const lineWidth = context.lineWidth;

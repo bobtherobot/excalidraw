@@ -196,6 +196,12 @@ export const generateRoughOptions = (
   continuousPath = false,
   isDarkMode: boolean = false,
 ): Options => {
+  // flow: floor the fill maths at 1px. flow's stroke slider reaches 0, and a
+  // 0 hachureGap makes roughjs clamp to a 0.1px gap (fillers/scan-line-
+  // hachure.ts), generating tens of thousands of fill lines and hanging the
+  // canvas on hachure/cross-hatch elements from an opened document.
+  const fillBase = Math.max(element.strokeWidth, 1);
+
   const options: Options = {
     seed: element.seed,
     strokeLineDash:
@@ -216,10 +222,25 @@ export const generateRoughOptions = (
     // when increasing strokeWidth, we must explicitly set fillWeight and
     // hachureGap because if not specified, roughjs uses strokeWidth to
     // calculate them (and we don't want the fills to be modified)
-    fillWeight: element.strokeWidth / 2,
-    hachureGap: element.strokeWidth * 4,
+    fillWeight: fillBase / 2,
+    hachureGap: fillBase * 4,
     roughness: adjustRoughness(element),
-    stroke: applyDarkModeFilter(element.strokeColor, isDarkMode),
+    // flow: a 0 stroke width means "no outline". Required because roughjs
+    // assigns ctx.lineWidth directly and canvas ignores a non-positive
+    // lineWidth, keeping the previous draw's value — so a 0-width shape would
+    // otherwise paint a stray hairline.
+    //
+    // "transparent", NOT roughjs's own "none": the canvas renderer paints
+    // "none" *as* transparent, so the pixels are identical, but the generator
+    // treats "none" as "emit no stroke path at all". For `curve()` — the
+    // curved-arrow/line generator, unlike `linearPath()` — that leaves the
+    // Drawable with an empty `sets`, and every consumer that derives geometry
+    // from it (getCurvePathOps → arrowheads, bounds, hit-testing) either
+    // throws on `sets[0]` or collapses to ±Infinity.
+    stroke:
+      element.strokeWidth === 0
+        ? "transparent"
+        : applyDarkModeFilter(element.strokeColor, isDarkMode),
     preserveVertices:
       continuousPath || element.roughness < ROUGHNESS.cartoonist,
   };
@@ -378,6 +399,14 @@ const getArrowheadShapes = (
   isDarkMode: boolean,
 ) => {
   if (arrowhead === null) {
+    return [];
+  }
+
+  // flow: a 0 stroke width means "no outline" (see generateRoughOptions
+  // above), but arrowheads are filled shapes drawn with fill: strokeColor —
+  // suppressing only the stroke would still paint a solid dot/triangle/diamond
+  // floating at the line's end. Suppress the whole arrowhead instead.
+  if (element.strokeWidth === 0) {
     return [];
   }
 
@@ -896,7 +925,9 @@ const _generateElementShape = (
         } else {
           shape = [
             generator.path(
-              generateElbowArrowShape(points, 16),
+              // flow: honour an explicit corner radius (Transform panel); the
+              // hardcoded 16 remains the default when unset.
+              generateElbowArrowShape(points, element.cornerRadius ?? 16),
               generateRoughOptions(element, true, isDarkMode),
             ),
           ];

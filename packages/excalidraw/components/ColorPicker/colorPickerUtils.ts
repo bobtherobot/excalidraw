@@ -54,14 +54,12 @@ export const isCustomColor = ({
 
 export const getMostUsedCustomColors = (
   elements: readonly ExcalidrawElement[],
-  type: "elementBackground" | "elementStroke" | "elementText",
+  type: "elementBackground" | "elementStroke",
   palette: ColorPaletteCustom,
 ) => {
   const elementColorTypeMap = {
     elementBackground: "backgroundColor",
     elementStroke: "strokeColor",
-    // text color is stored as strokeColor (wimp fork)
-    elementText: "strokeColor",
   };
 
   const colors = elements.filter((element) => {
@@ -106,5 +104,4 @@ export const activeColorPickerSectionAtom =
 export type ColorPickerType =
   | "canvasBackground"
   | "elementBackground"
-  | "elementStroke"
-  | "elementText";
+  | "elementStroke";

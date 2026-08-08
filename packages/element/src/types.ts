@@ -47,6 +47,13 @@ type _ExcalidrawElementBase = Readonly<{
   strokeWidth: number;
   strokeStyle: StrokeStyle;
   roundness: null | { type: RoundnessType; value?: number };
+  // flow: explicit numeric corner radius set via the Transform panel. When a
+  // number, it overrides the roundness presets in getCornerRadius (rectangle,
+  // diamond) and the elbow-arrow corner rounding. Undefined = legacy behaviour.
+  cornerRadius?: number;
+  // flow: per-container padding between a container's edge and its bound text
+  // (Transform panel), driving where the text wraps. Undefined = BOUND_TEXT_PADDING.
+  padding?: number;
   roughness: number;
   opacity: number;
   width: number;
@@ -338,6 +345,11 @@ export type ExcalidrawLinearElement = _ExcalidrawElementBase &
     endBinding: FixedPointBinding | null;
     startArrowhead: Arrowhead | null;
     endArrowhead: Arrowhead | null;
+    // flow addition: per-element arrowhead size as a multiple of strokeWidth
+    // (size = strokeWidth * factor). Optional; undefined falls back to the
+    // default factor in getArrowheadPoints. See bounds.ts / restore.ts.
+    startArrowheadSize?: number;
+    endArrowheadSize?: number;
   }>;
 
 export type ExcalidrawLineElement = ExcalidrawLinearElement &

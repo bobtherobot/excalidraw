@@ -17,9 +17,12 @@ import { getElementAbsoluteCoords } from "./bounds";
 import {
   isElbowArrow,
   isFrameLikeElement,
-  isImageElement,
   isLinearElement,
 } from "./typeChecks";
+
+// flow: selection chrome hugs element bounds; linear elements keep clearance
+// so corner handles stay clickable past their own vertices.
+import { SELECTION_SPACING, LINEAR_SELECTION_SPACING } from "@excalidraw/common";
 
 import type {
   ElementsMap,
@@ -136,8 +139,8 @@ export const getTransformHandlesFromCoords = (
   zoom: Zoom,
   pointerType: PointerType,
   omitSides: { [T in TransformHandleType]?: boolean } = {},
-  margin = 4,
-  spacing = DEFAULT_TRANSFORM_HANDLE_SPACING,
+  margin = SELECTION_SPACING,
+  spacing = SELECTION_SPACING,
 ): TransformHandles => {
   const size = transformHandleSizes[pointerType];
   const handleWidth = size / zoom.value;
@@ -309,19 +312,18 @@ export const getTransformHandles = (
       rotation: true,
     };
   }
-  const margin = isLinearElement(element)
-    ? DEFAULT_TRANSFORM_HANDLE_SPACING + 8
-    : isImageElement(element)
-    ? 0
-    : DEFAULT_TRANSFORM_HANDLE_SPACING;
+  // flow: handles sit on the element bounds (upstream gave linears +8 and images
+  // 0; we take the image treatment). Linear elements are the exception — their
+  // corners often ARE their vertices, and a vertex wins the hit test, so a
+  // flush handle is unclickable. See LINEAR_SELECTION_SPACING.
   return getTransformHandlesFromCoords(
     getElementAbsoluteCoords(element, elementsMap, true),
     element.angle,
     zoom,
     pointerType,
     omitSides,
-    margin,
-    isImageElement(element) ? 0 : undefined,
+    isLinearElement(element) ? LINEAR_SELECTION_SPACING : SELECTION_SPACING,
+    SELECTION_SPACING,
   );
 };
 

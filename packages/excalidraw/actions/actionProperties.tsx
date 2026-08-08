@@ -352,16 +352,14 @@ export const actionChangeStrokeColor = register<
         elements: changeProperty(
           elements,
           appState,
-          // Text color is owned by the separate "Text" control (wimp fork), so
-          // Stroke no longer recolors text or bound-text elements.
           (el) => {
-            return hasStrokeColor(el.type) && !isTextElement(el)
+            return hasStrokeColor(el.type)
               ? newElementWith(el, {
                   strokeColor: value.currentItemStrokeColor,
                 })
               : el;
           },
-          false,
+          true,
         ),
       }),
       appState: {
@@ -373,7 +371,6 @@ export const actionChangeStrokeColor = register<
         : CaptureUpdateAction.EVENTUALLY,
     };
   },
-<<<<<<< ours
   PanelComponent: ({ elements, appState, updateData, app, data }) => {
     const { stylesPanelMode } = getStylesPanelInfo(app);
 
@@ -381,22 +378,6 @@ export const actionChangeStrokeColor = register<
       <>
         {stylesPanelMode === "full" && (
           <h3 aria-hidden="true">{t("labels.stroke")}</h3>
-=======
-  PanelComponent: ({ elements, appState, updateData, appProps }) => (
-    <>
-      <h3 aria-hidden="true">{t("labels.stroke")}</h3>
-      <ColorPicker
-        topPicks={DEFAULT_ELEMENT_STROKE_PICKS}
-        palette={DEFAULT_ELEMENT_STROKE_COLOR_PALETTE}
-        type="elementStroke"
-        label={t("labels.stroke")}
-        color={getFormValue(
-          elements,
-          appState,
-          (element) => element.strokeColor,
-          (element) => !isTextElement(element),
-          appState.currentItemStrokeColor,
->>>>>>> theirs
         )}
         <ColorPicker
           topPicks={DEFAULT_ELEMENT_STROKE_PICKS}
@@ -421,72 +402,9 @@ export const actionChangeStrokeColor = register<
   },
 });
 
-<<<<<<< ours
 export const actionChangeBackgroundColor = register<
   Pick<AppState, "currentItemBackgroundColor" | "viewBackgroundColor">
 >({
-=======
-// wimp fork: dedicated Text color control, independent of Stroke. Text color is
-// stored as the element's strokeColor (Excalidraw has no separate text-color
-// field), but this control scopes to text/bound-text elements only, and new
-// text draws from `currentItemTextColor` (see App.tsx text creation).
-export const actionChangeTextColor = register({
-  name: "changeTextColor",
-  label: "labels.textColor",
-  trackEvent: false,
-  perform: (elements, appState, value) => {
-    return {
-      ...(value.currentItemTextColor && {
-        elements: changeProperty(
-          elements,
-          appState,
-          (el) =>
-            isTextElement(el)
-              ? newElementWith(el, {
-                  strokeColor: value.currentItemTextColor,
-                })
-              : el,
-          // include bound text so recoloring a selected container recolors its label
-          true,
-        ),
-      }),
-      appState: {
-        ...appState,
-        ...value,
-      },
-      captureUpdate: !!value.currentItemTextColor
-        ? CaptureUpdateAction.IMMEDIATELY
-        : CaptureUpdateAction.EVENTUALLY,
-    };
-  },
-  PanelComponent: ({ elements, appState, updateData, appProps }) => (
-    <>
-      <h3 aria-hidden="true">{t("labels.textColor")}</h3>
-      <ColorPicker
-        topPicks={DEFAULT_ELEMENT_STROKE_PICKS}
-        palette={DEFAULT_ELEMENT_STROKE_COLOR_PALETTE}
-        // distinct type so the Text popover doesn't collide with Stroke's
-        // (openPopup state is keyed by type) — wimp fork
-        type="elementText"
-        label={t("labels.textColor")}
-        color={getFormValue(
-          elements,
-          appState,
-          (element) => element.strokeColor,
-          (element) => isTextElement(element),
-          appState.currentItemTextColor,
-        )}
-        onChange={(color) => updateData({ currentItemTextColor: color })}
-        elements={elements}
-        appState={appState}
-        updateData={updateData}
-      />
-    </>
-  ),
-});
-
-export const actionChangeBackgroundColor = register({
->>>>>>> theirs
   name: "changeBackgroundColor",
   label: "labels.changeBackground",
   trackEvent: false,

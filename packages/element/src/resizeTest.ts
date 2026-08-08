@@ -274,7 +274,11 @@ export const getCursorForResizingElement = (resizingElement: {
   return cursor ? `${cursor}-resize` : "";
 };
 
-const getSelectionBorders = <Point extends LocalPoint | GlobalPoint>(
+// flow: exported so the test harness can target the same side-resize band the
+// app uses, instead of a phantom n/e/s/w handle rect that production never
+// renders (DEFAULT_OMIT_SIDES omits those) and whose position drifts with the
+// selection-chrome margin.
+export const getSelectionBorders = <Point extends LocalPoint | GlobalPoint>(
   [x1, y1]: Point,
   [x2, y2]: Point,
   center: Point,

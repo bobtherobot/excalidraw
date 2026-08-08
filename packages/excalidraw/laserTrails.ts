@@ -17,7 +17,7 @@ export class LaserTrails implements Trail {
   constructor(private app: App) {
     this.localTrail = new AnimatedTrail(app, {
       ...this.getTrailOptions(),
-      fill: () => DEFAULT_LASER_COLOR,
+      fill: () => this.app.state.laserColor || DEFAULT_LASER_COLOR,
     });
   }
 

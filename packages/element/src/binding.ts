@@ -148,7 +148,16 @@ export const maxBindingDistance_simple = (zoom?: AppState["zoom"]): number => {
 
 export const isBindingEnabled = (appState: {
   isBindingEnabled: AppState["isBindingEnabled"];
+  bindingMode?: AppState["bindingMode"];
 }): boolean => {
+  // flow: a persistent lock (appState.bindingMode) overrides the transient
+  // per-input flag so arrows can be forced to always / never bind.
+  if (appState.bindingMode === "on") {
+    return true;
+  }
+  if (appState.bindingMode === "off") {
+    return false;
+  }
   return appState.isBindingEnabled;
 };
 
