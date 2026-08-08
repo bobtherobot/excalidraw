@@ -90,8 +90,16 @@ export const generateRoughOptions = (
     // flow: a 0 stroke width means "no outline". Required because roughjs
     // assigns ctx.lineWidth directly and canvas ignores a non-positive
     // lineWidth, keeping the previous draw's value — so a 0-width shape would
-    // otherwise paint a stray hairline. roughjs maps "none" to transparent.
-    stroke: element.strokeWidth === 0 ? "none" : element.strokeColor,
+    // otherwise paint a stray hairline.
+    //
+    // "transparent", NOT roughjs's own "none": the canvas renderer paints
+    // "none" *as* transparent (roughjs canvas.ts), so the pixels are identical,
+    // but the generator treats "none" as "emit no stroke path at all". For
+    // `curve()` — the curved-arrow/line generator, unlike `linearPath()` —
+    // that leaves the Drawable with an empty `sets`, and every consumer that
+    // derives geometry from it (getCurvePathOps → arrowheads, bounds,
+    // hit-testing) either throws on `sets[0]` or collapses to ±Infinity.
+    stroke: element.strokeWidth === 0 ? "transparent" : element.strokeColor,
     preserveVertices:
       continuousPath || element.roughness < ROUGHNESS.cartoonist,
   };
