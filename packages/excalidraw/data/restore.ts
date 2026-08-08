@@ -171,7 +171,12 @@ const restoreElementWithProperties = <
     isDeleted: element.isDeleted ?? false,
     id: element.id || randomId(),
     fillStyle: element.fillStyle || DEFAULT_ELEMENT_PROPS.fillStyle,
-    strokeWidth: element.strokeWidth || DEFAULT_ELEMENT_PROPS.strokeWidth,
+    // flow: `??`, not `||`. flow's stroke slider starts at 0 ("no outline"),
+    // and `0 || 2` silently rewrote every legitimate 0 to the default — losing
+    // it on paste, on file open, and on any other restore. Upstream never hit
+    // this because its own picker only offers 1/2/4. Matches how every sibling
+    // field on this object already treats a present-but-falsy value.
+    strokeWidth: element.strokeWidth ?? DEFAULT_ELEMENT_PROPS.strokeWidth,
     strokeStyle: element.strokeStyle ?? DEFAULT_ELEMENT_PROPS.strokeStyle,
     roughness: element.roughness ?? DEFAULT_ELEMENT_PROPS.roughness,
     opacity:
