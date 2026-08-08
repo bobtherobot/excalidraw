@@ -71,15 +71,26 @@ const getConfig = (outdir) => ({
   target: "es2020",
   assetNames: "[dir]/[name]",
   chunkNames: "[dir]/[name]-[hash]",
+  // flow: bundle the sibling workspace packages instead of leaving them
+  // external. Upstream ships @excalidraw/excalidraw expecting its siblings to
+  // be resolvable as separate npm packages; flow consumes the fork as a single
+  // `file:` dependency, so an external import of @excalidraw/common et al is
+  // unresolvable and the app fails to boot ("Failed to resolve entry for
+  // package"). Aliasing each to its source and dropping it from `external`
+  // restores the self-contained bundle v0.18.1 produced. `utils` was already
+  // aliased this way upstream — this just applies the same treatment to the
+  // remaining four.
   alias: {
     "@excalidraw/utils": path.resolve(__dirname, "../packages/utils/src"),
+    "@excalidraw/common": path.resolve(__dirname, "../packages/common/src"),
+    "@excalidraw/element": path.resolve(__dirname, "../packages/element/src"),
+    "@excalidraw/math": path.resolve(__dirname, "../packages/math/src"),
+    "@excalidraw/fractional-indexing": path.resolve(
+      __dirname,
+      "../packages/fractional-indexing/src",
+    ),
   },
-  external: [
-    "@excalidraw/common",
-    "@excalidraw/element",
-    "@excalidraw/math",
-    "@excalidraw/fractional-indexing",
-  ],
+  external: [],
   loader: {
     ".woff2": "file",
   },
