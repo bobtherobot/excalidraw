@@ -52,6 +52,9 @@ export const getDefaultAppState = (): Omit<
     currentItemPadding: undefined,
     currentItemStrokeStyle: DEFAULT_ELEMENT_PROPS.strokeStyle,
     currentItemStrokeWidthKey: DEFAULT_ELEMENT_STROKE_WIDTH_KEY,
+    // flow: numeric stroke-width default (continuous 0-10px slider); overrides
+    // the keyed value above when set.
+    currentItemStrokeWidth: DEFAULT_ELEMENT_PROPS.strokeWidth,
     currentItemTextAlign: DEFAULT_TEXT_ALIGN,
     currentHoveredFontFamily: null,
     cursorButton: "up",
@@ -196,6 +199,7 @@ const APP_STATE_STORAGE_CONF = (<
   currentItemTextColor: { browser: true, export: false, server: false },
   currentItemStrokeStyle: { browser: true, export: false, server: false },
   currentItemStrokeWidthKey: { browser: true, export: false, server: false },
+  currentItemStrokeWidth: { browser: true, export: false, server: false },
   currentItemTextAlign: { browser: true, export: false, server: false },
   currentHoveredFontFamily: { browser: false, export: false, server: false },
   cursorButton: { browser: true, export: false, server: false },

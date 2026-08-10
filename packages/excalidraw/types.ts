@@ -430,6 +430,11 @@ export interface AppState {
   currentItemBackgroundColor: string;
   currentItemFillStyle: ExcalidrawElement["fillStyle"];
   currentItemStrokeWidthKey: StrokeWidthKey;
+  /** flow addition: a numeric stroke-width default for new elements, taking
+   *  precedence over `currentItemStrokeWidthKey` when set. flow's stroke
+   *  control is a continuous 0-10px slider (0 meaning "no outline"), which
+   *  upstream's three-value keyed system cannot express. */
+  currentItemStrokeWidth?: number;
   currentItemStrokeStyle: ExcalidrawElement["strokeStyle"];
   currentItemRoughness: number;
   currentItemStrokeVariability: StrokeVariability;

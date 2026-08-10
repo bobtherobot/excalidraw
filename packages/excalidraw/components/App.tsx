@@ -10343,6 +10343,12 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   private getCurrentItemStrokeWidth(elementType: ExcalidrawElement["type"]) {
+    // flow: a numeric default takes precedence over upstream's keyed system.
+    // flow's stroke control is a continuous 0-10px slider and 0 is meaningful
+    // ("no outline"), so `!= null` rather than a truthiness check.
+    if (this.state.currentItemStrokeWidth != null) {
+      return this.state.currentItemStrokeWidth;
+    }
     return getStrokeWidthByKey(
       elementType,
       this.state.currentItemStrokeWidthKey,
