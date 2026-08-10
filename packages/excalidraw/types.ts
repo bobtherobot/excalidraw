@@ -1266,6 +1266,8 @@ export interface ExcalidrawImperativeAPI {
   updateScene: InstanceType<typeof App>["updateScene"];
   applyDeltas: InstanceType<typeof App>["applyDeltas"];
   mutateElement: InstanceType<typeof App>["mutateElement"];
+  /** flow addition: rewrap a container's bound text (see App.redrawBoundText). */
+  redrawBoundText: InstanceType<typeof App>["redrawBoundText"];
   updateLibrary: InstanceType<typeof Library>["updateLibrary"];
   resetScene: InstanceType<typeof App>["resetScene"];
   getSceneElementsIncludingDeleted: InstanceType<

@@ -759,6 +759,7 @@ class App extends React.Component<AppProps, AppState> {
       updateScene: this.updateScene,
       applyDeltas: this.applyDeltas,
       mutateElement: this.mutateElement,
+      redrawBoundText: this.redrawBoundText,
       updateLibrary: this.library.updateLibrary,
       addFiles: this.addFiles,
       resetScene: this.resetScene,
@@ -5285,6 +5286,22 @@ class App extends React.Component<AppProps, AppState> {
       informMutation,
       isDragging: false,
     });
+  };
+
+  /**
+   * flow addition: rewrap a container's bound text after a change that alters
+   * its text box without changing the container's own dimensions -- flow's
+   * per-container `padding`. redrawTextBoundingBox needs a Scene, which the
+   * public API doesn't hand out, so it is done here where the scene is in hand.
+   */
+  public redrawBoundText = (container: ExcalidrawElement) => {
+    const boundText = getBoundTextElement(
+      container,
+      this.scene.getNonDeletedElementsMap(),
+    );
+    if (boundText) {
+      redrawTextBoundingBox(boundText, container, this.scene);
+    }
   };
 
   public triggerRender = (
