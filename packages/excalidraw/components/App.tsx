@@ -4863,7 +4863,8 @@ class App extends React.Component<AppProps, AppState> {
     const textElementProps = {
       x,
       y,
-      strokeColor: this.state.currentItemStrokeColor,
+      // flow: text colour is independent of stroke colour.
+      strokeColor: this.state.currentItemTextColor,
       backgroundColor: this.state.currentItemBackgroundColor,
       fillStyle: this.state.currentItemFillStyle,
       strokeWidth: this.getCurrentItemStrokeWidth("text"),
@@ -6866,7 +6867,8 @@ class App extends React.Component<AppProps, AppState> {
       newTextElement({
         x: newTextElementPosition.x,
         y: newTextElementPosition.y,
-        strokeColor: this.state.currentItemStrokeColor,
+        // flow: text colour is independent of stroke colour.
+        strokeColor: this.state.currentItemTextColor,
         backgroundColor: this.state.currentItemBackgroundColor,
         fillStyle: this.state.currentItemFillStyle,
         strokeWidth: this.getCurrentItemStrokeWidth("text"),
@@ -10182,6 +10184,11 @@ class App extends React.Component<AppProps, AppState> {
               locked: false,
               frameId: topLayerFrame ? topLayerFrame.id : null,
               elbowed: this.state.currentItemArrowType === ARROW_TYPE.elbow,
+              // flow: only an elbow arrow has bends to soften.
+              cornerRadius:
+                this.state.currentItemArrowType === ARROW_TYPE.elbow
+                  ? this.state.currentItemCornerRadius
+                  : undefined,
               fixedSegments:
                 this.state.currentItemArrowType === ARROW_TYPE.elbow
                   ? []
@@ -10370,6 +10377,15 @@ class App extends React.Component<AppProps, AppState> {
       roughness: this.state.currentItemRoughness,
       opacity: this.state.currentItemOpacity,
       roundness: this.getCurrentItemRoundness(elementType),
+      // flow: a remembered corner radius applies to rectangles and diamonds
+      // only — an ellipse has no corners to round. Padding applies to any shape
+      // container, since it may later be given bound text. Both stay optional:
+      // undefined leaves the element's derived default in place.
+      cornerRadius:
+        elementType === "rectangle" || elementType === "diamond"
+          ? this.state.currentItemCornerRadius
+          : undefined,
+      padding: this.state.currentItemPadding,
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
     } as const;
@@ -12369,11 +12385,13 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
-      if (
-        !this.isToolLocked() &&
-        activeTool.type !== "freedraw" &&
-        newElement
-      ) {
+      // flow: selecting what you just drew is independent of whether the tool
+      // stays active. Upstream gates both behaviours on the tool lock; flow
+      // forces the lock permanently on (see src/ui/toolbar/useToolOverride.ts),
+      // which silently disabled auto-select-on-draw too. The sibling block
+      // below (reverting to the selection tool) stays gated — that half flow
+      // genuinely wants off.
+      if (activeTool.type !== "freedraw" && newElement) {
         this.setState((prevState) => ({
           selectedElementIds: makeNextSelectedElementIds(
             {
