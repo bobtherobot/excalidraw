@@ -411,7 +411,26 @@ const repairBinding = <T extends ExcalidrawArrowElement>(
 };
 
 const restoreElementWithProperties = <
-  T extends Required<Omit<ExcalidrawElement, "customData">> & {
+  // flow: our additive element props (cornerRadius, padding, per-end arrowhead
+  // sizes) are genuinely optional — "not set" is a meaningful state that means
+  // "derive the default". `Required<>` strips the `?` and demands a concrete
+  // number, so they must be exempted here or no element type satisfies the
+  // constraint and `yarn gen:types` fails (which silently left flow consuming
+  // stale .d.ts files).
+  T extends Required<
+    Omit<
+      ExcalidrawElement,
+      | "customData"
+      | "cornerRadius"
+      | "padding"
+      | "startArrowheadSize"
+      | "endArrowheadSize"
+    >
+  > & {
+    cornerRadius?: number;
+    padding?: number;
+    startArrowheadSize?: number;
+    endArrowheadSize?: number;
     customData?: ExcalidrawElement["customData"];
     /** @deprecated */
     boundElementIds?: readonly ExcalidrawElement["id"][];
