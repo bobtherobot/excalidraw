@@ -562,3 +562,9 @@ export type {
   SearchMatchLine,
   SearchMatchPreview,
 } from "./searchMatches";
+
+// flow: surface the eyedropper so a host-side color picker can open the
+// vendor's own overlay. Additive re-exports only — LayerUI already renders
+// <EyeDropper/> whenever this atom is set.
+export { activeEyeDropperAtom } from "./components/EyeDropper";
+export { editorJotaiStore } from "./editor-jotai";
