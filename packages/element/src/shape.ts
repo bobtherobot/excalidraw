@@ -26,6 +26,7 @@ import {
   LINE_POLYGON_POINT_MERGE_DISTANCE,
   applyDarkModeFilter,
   DEFAULT_STROKE_STREAMLINE,
+  getFlowShapeGeometry,
 } from "@excalidraw/common";
 
 import { RoughGenerator } from "roughjs/bin/generator";
@@ -798,6 +799,25 @@ const _generateElementShape = (
     case "rectangle":
     case "iframe":
     case "embeddable": {
+      // flow: a rectangle carrying customData.flowShape draws flow's own
+      // geometry instead of a box. Guarded to rectangle so iframes and
+      // embeddables are untouched; an unregistered kind returns null and falls
+      // through to the normal box below.
+      if (element.type === "rectangle") {
+        const flowGeom = getFlowShapeGeometry(element);
+        if (flowGeom) {
+          return flowGeom.path
+            ? generator.path(
+                flowGeom.path,
+                generateRoughOptions(element, true, isDarkMode),
+              )
+            : generator.polygon(
+                flowGeom.points.map(([px, py]) => [px, py]),
+                generateRoughOptions(element, false, isDarkMode),
+              );
+        }
+      }
+
       let shape: ElementShapes[typeof element.type];
       // this is for rendering the stroke/bg of the embeddable, especially
       // when the src url is not set

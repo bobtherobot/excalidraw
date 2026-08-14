@@ -14,4 +14,5 @@ export * from "./emitter";
 export * from "./appEventBus";
 export * from "./editorInterface";
 export * from "./versionedSnapshotStore";
+export * from "./flowShapes";
 export { Debug } from "../debug";

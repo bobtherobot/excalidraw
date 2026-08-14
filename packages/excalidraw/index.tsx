@@ -568,3 +568,8 @@ export type {
 // <EyeDropper/> whenever this atom is set.
 export { activeEyeDropperAtom } from "./components/EyeDropper";
 export { editorJotaiStore } from "./editor-jotai";
+
+// flow: surface the flow-shape registration seam so flow's own shape
+// geometry (src/ui/shapes) can register itself with the vendor renderer/
+// hit-testing without flow importing @excalidraw/common directly.
+export { registerFlowShape, getFlowShapeGeometry } from "@excalidraw/common";
