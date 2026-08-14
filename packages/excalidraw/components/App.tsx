@@ -5568,6 +5568,15 @@ class App extends React.Component<AppProps, AppState> {
         }
 
         if (shape) {
+          // flow: a keyboard shortcut activates a tool directly, bypassing
+          // flow's shapebar `setTool` wrapper entirely (that wrapper is the
+          // only other place `currentItemFlowShape` is written). Without
+          // this, arming a shape from the shapebar and then pressing a
+          // shortcut like R leaves the shape armed, so the plain rectangle
+          // the shortcut draws is silently stamped with the old shape's kind.
+          if (this.state.currentItemFlowShape) {
+            this.setState({ currentItemFlowShape: null });
+          }
           if (this.state.activeTool.type !== shape) {
             trackEvent(
               "toolbar",
@@ -10412,9 +10421,19 @@ class App extends React.Component<AppProps, AppState> {
       // flow: a shapebar tool arms `currentItemFlowShape`; stamp it so the
       // renderer and hit-tester draw that shape. Guarded to rectangle because
       // this same method also creates the selection element and embeddables.
+      // Deep-copies `p` rather than handing out the appState object by
+      // reference: every element drawn during one tool activation would
+      // otherwise share one `p` object with appState (and with each other),
+      // which is harmless only as long as every write path goes through
+      // `newElementWith` — a future in-place write would cross-corrupt them.
       customData:
         elementType === "rectangle" && this.state.currentItemFlowShape
-          ? { flowShape: this.state.currentItemFlowShape }
+          ? {
+              flowShape: {
+                kind: this.state.currentItemFlowShape.kind,
+                p: { ...this.state.currentItemFlowShape.p },
+              },
+            }
           : undefined,
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
