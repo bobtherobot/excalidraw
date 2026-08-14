@@ -10905,12 +10905,24 @@ class App extends React.Component<AppProps, AppState> {
           this.lassoTrail.endPath();
         }
 
-        // prevent dragging even if we're no longer holding cmd/ctrl otherwise
-        // it would have weird results (stuff jumping all over the screen)
         // Checking for editingTextElement to avoid jump while editing on mobile #6503
+        //
+        // flow: upstream also required `!pointerDownState.withCmdOrCtrl` here,
+        // suppressing element dragging for any gesture whose pointerdown carried
+        // cmd/ctrl, because upstream reserves that modifier for select-through.
+        // flow reserves it for something else entirely — holding it is flow's
+        // *tool override*, a momentary selection tool (see useToolOverride) —
+        // so under flow's model a cmd/ctrl-held gesture is an ordinary selection
+        // gesture and must be able to move things. With the condition in place
+        // the override could select and resize but never move, which is the one
+        // thing people reach for it to do.
+        //
+        // `event.ctrlKey` cannot be rewritten from flow's side, so this cannot
+        // be fixed above the fork. Marquee select-through is unaffected: it runs
+        // on pointer-up (the other `withCmdOrCtrl` use) and is only reached when
+        // this branch does not drag.
         if (
           selectedElements.length > 0 &&
-          !pointerDownState.withCmdOrCtrl &&
           !this.state.editingTextElement &&
           this.state.activeEmbeddable?.state !== "active"
         ) {
