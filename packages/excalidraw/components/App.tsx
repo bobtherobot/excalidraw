@@ -10409,6 +10409,13 @@ class App extends React.Component<AppProps, AppState> {
           ? this.state.currentItemCornerRadius
           : undefined,
       padding: this.state.currentItemPadding,
+      // flow: a shapebar tool arms `currentItemFlowShape`; stamp it so the
+      // renderer and hit-tester draw that shape. Guarded to rectangle because
+      // this same method also creates the selection element and embeddables.
+      customData:
+        elementType === "rectangle" && this.state.currentItemFlowShape
+          ? { flowShape: this.state.currentItemFlowShape }
+          : undefined,
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
     } as const;

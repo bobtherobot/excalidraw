@@ -362,6 +362,9 @@ export interface AppState {
    *  only elements the selection rectangle fully contains; "touch" selects any
    *  element the selection rectangle intersects. */
   selectionMode?: "enclose" | "touch";
+  // flow: the shape a newly drawn rectangle is stamped with (shapebar tools arm
+  // it; every other tool clears it). null = draw a plain rectangle.
+  currentItemFlowShape?: { kind: string; p: Record<string, number> } | null;
   /** user box selection preference; defaults to "contain" when unset */
   boxSelectionMode: BoxSelectionMode;
   /** user arrow binding preference */

@@ -90,6 +90,7 @@ export const getDefaultAppState = (): Omit<
     bindingMode: "auto", // flow: persistent arrow-binding lock (default = auto)
     laserColor: DEFAULT_LASER_COLOR, // flow: global laser-pointer color
     selectionMode: "enclose", // flow: marquee selection mode (default = enclose)
+    currentItemFlowShape: null, // flow: no shape armed by default
     defaultSidebarDockedPreference: false,
     isLoading: false,
     isResizing: false,
@@ -232,6 +233,8 @@ const APP_STATE_STORAGE_CONF = (<
   laserColor: { browser: false, export: false, server: false },
   // flow: persistence owned by flow (localStorage flow.selectionMode), re-applied on load.
   selectionMode: { browser: false, export: false, server: false },
+  // flow: transient tool arming, never persisted or exported.
+  currentItemFlowShape: { browser: false, export: false, server: false },
   defaultSidebarDockedPreference: {
     browser: true,
     export: false,
