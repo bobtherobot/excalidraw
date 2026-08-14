@@ -16,6 +16,7 @@ import {
   lineSegment,
   linesIntersectAt,
   pointFrom,
+  vectorCross,
   vectorFromPoint,
   vectorNormal,
   vectorNormalize,
@@ -70,6 +71,36 @@ export const getFlowShapeGeometry = (element: {
   return geom && geom.points.length >= 3 ? geom : null;
 };
 
+/** Below this, a cross product is treated as "collinear" rather than
+ *  positive/negative — guards against float noise flipping the sign at a
+ *  near-straight vertex and reporting a false concavity. */
+const CONVEXITY_EPSILON = 1e-6;
+
+/**
+ * Whether a simple polygon (vertices in order, no self-intersection) is
+ * convex: true when every consecutive pair of edge vectors turns the same
+ * way (all cross products share a sign, ignoring near-zero/collinear turns).
+ */
+const isConvexPolygon = (vertices: readonly GlobalPoint[]): boolean => {
+  let sign = 0;
+  for (let i = 0; i < vertices.length; i++) {
+    const a = vertices[i];
+    const b = vertices[(i + 1) % vertices.length];
+    const c = vertices[(i + 2) % vertices.length];
+    const cross = vectorCross(vectorFromPoint(b, a), vectorFromPoint(c, b));
+    if (Math.abs(cross) < CONVEXITY_EPSILON) {
+      continue;
+    }
+    const turn = cross > 0 ? 1 : -1;
+    if (sign === 0) {
+      sign = turn;
+    } else if (turn !== sign) {
+      return false;
+    }
+  }
+  return true;
+};
+
 /**
  * The real outline of a flow shape's carrier rectangle, as **unrotated** line
  * segments in absolute (element.x/y-relative) coordinates — same convention
@@ -104,10 +135,18 @@ export const getFlowShapeGeometry = (element: {
  * miter consecutive offset edges by extending them to their new intersection
  * (`linesIntersectAt`, falling back to the un-mitered endpoint on the
  * degenerate parallel case). This is an exact outward offset for a **convex**
- * polygon. The only currently-registered shape (the triangle) is convex, so
- * this is exact today. A concave shape would get sharp inward spikes at its
- * reflex vertices instead of a properly rounded offset there — flagged, not
- * solved, since nothing concave exists yet to verify a fix against.
+ * polygon only — on a concave one, mitering the reflex vertices produces
+ * self-intersecting inward spikes rather than a rounded offset. Rather than
+ * ship that, `offset !== 0` on a concave outline (detected via
+ * `isConvexPolygon`, a sign-consistency check on consecutive edge-vector
+ * cross products) falls through to `null` here, same as an unregistered
+ * shape — the caller falls back to its existing box behaviour, so a concave
+ * flow shape gets a slightly-wrong (box-shaped) binding gap instead of a
+ * self-intersecting one. `offset === 0` is exact for any simple polygon,
+ * convex or not (it's just the vertices connected in order), so that path is
+ * never gated. The triangle registered today is convex either way; the gate
+ * exists for the concave shapes planned in later tasks (star, cloud, fat
+ * arrow, tape).
  */
 export const getFlowShapeSides = (
   element: {
@@ -132,6 +171,13 @@ export const getFlowShapeSides = (
     return vertices.map((a, i) =>
       lineSegment<GlobalPoint>(a, vertices[(i + 1) % vertices.length]),
     );
+  }
+
+  // The miter below is only exact for a convex outline — see the JSDoc.
+  // Fall through to the caller's box behaviour rather than emit a
+  // self-intersecting one for a concave shape.
+  if (!isConvexPolygon(vertices)) {
+    return null;
   }
 
   const cx = vertices.reduce((sum, v) => sum + v[0], 0) / vertices.length;

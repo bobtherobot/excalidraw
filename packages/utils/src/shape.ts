@@ -13,7 +13,7 @@
  */
 import { pointsOnBezierCurves } from "points-on-curve";
 
-import { getFlowShapeGeometry, invariant } from "@excalidraw/common";
+import { invariant } from "@excalidraw/common";
 import {
   curve,
   lineSegment,
@@ -125,19 +125,7 @@ export const getPolygonShape = <Point extends GlobalPoint | LocalPoint>(
 
   let data: Polygon<Point>;
 
-  // flow: a rectangle carrying customData.flowShape hit-tests on its real
-  // outline. Without this a transparent triangle would be selectable only along
-  // its bounding box's edges — i.e. exactly where it isn't drawn.
-  const flowGeom =
-    element.type === "rectangle" ? getFlowShapeGeometry(element) : null;
-
-  if (flowGeom) {
-    data = polygon(
-      ...flowGeom.points.map(([px, py]) =>
-        pointRotateRads(pointFrom<Point>(x + px, y + py), center, angle),
-      ),
-    );
-  } else if (element.type === "diamond") {
+  if (element.type === "diamond") {
     data = polygon(
       pointRotateRads(pointFrom(cx, y), center, angle),
       pointRotateRads(pointFrom(x + width, cy), center, angle),
