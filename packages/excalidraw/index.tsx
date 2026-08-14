@@ -572,4 +572,10 @@ export { editorJotaiStore } from "./editor-jotai";
 // flow: surface the flow-shape registration seam so flow's own shape
 // geometry (src/ui/shapes) can register itself with the vendor renderer/
 // hit-testing without flow importing @excalidraw/common directly.
-export { registerFlowShape, getFlowShapeGeometry } from "@excalidraw/common";
+// clearFlowShapes is a test-only seam (src/ui/shapes/register.test.ts uses it
+// to reset the registry between cases that register a throwaway kind).
+export {
+  registerFlowShape,
+  getFlowShapeGeometry,
+  clearFlowShapes,
+} from "@excalidraw/common";
