@@ -6,6 +6,8 @@ import {
 
 import { ellipse, ellipseDistanceFromPoint } from "@excalidraw/math/ellipse";
 
+import { getFlowShapeSides } from "@excalidraw/common";
+
 import type { GlobalPoint, Radians } from "@excalidraw/math";
 
 import {
@@ -69,6 +71,20 @@ const distanceToRectanguloidElement = (
   // To emulate a rotated rectangle we rotate the point in the inverse angle
   // instead. It's all the same distance-wise.
   const rotatedPoint = pointRotateRads(p, center, -element.angle as Radians);
+
+  // flow: a rectangle carrying customData.flowShape hit-tests on its real
+  // outline rather than its box — this is the click-to-select path, so
+  // without this a transparent flow shape (the common case) is only
+  // selectable along its invisible bounding box, never its drawn edges.
+  // getFlowShapeSides already returns unrotated sides in the same absolute
+  // coordinate space deconstructRectanguloidElement's `sides` are in, so no
+  // extra rotation is needed here — `rotatedPoint` above already did the only
+  // rotation this function performs.
+  const flowSides =
+    element.type === "rectangle" ? getFlowShapeSides(element) : null;
+  if (flowSides) {
+    return Math.min(...flowSides.map((s) => distanceToLineSegment(rotatedPoint, s)));
+  }
 
   // Get the element's building components we can test against
   const [sides, corners] = deconstructRectanguloidElement(element);

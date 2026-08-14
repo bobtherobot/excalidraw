@@ -1,4 +1,9 @@
-import { invariant, isTransparent, type Bounds } from "@excalidraw/common";
+import {
+  getFlowShapeSides,
+  invariant,
+  isTransparent,
+  type Bounds,
+} from "@excalidraw/common";
 import {
   curveIntersectLineSegment,
   isPointWithinBounds,
@@ -645,8 +650,25 @@ const intersectRectanguloidWithLineSegment = (
   );
   const rotatedIntersector = lineSegment(rotatedA, rotatedB);
 
+  // flow: a rectangle carrying customData.flowShape intersects on its real
+  // outline rather than its box. This is how an arrow finds its landing
+  // point on a bindable shape, so without this an arrow bound to a
+  // transparent flow shape would still snap to the invisible box edge.
+  // getFlowShapeSides already returns unrotated sides in the same absolute
+  // coordinate space deconstructRectanguloidElement's `sides` are in
+  // (offset applied the same way, outward), so — same as the box case —
+  // no extra rotation is needed here; lineIntersections/curveIntersections
+  // below do the one forward-rotation of the *results* that this function
+  // performs, using the `center`/`element.angle` already threaded through.
+  // A flow shape's outline is a plain polygon with no rounded corners, so
+  // the "corners" half of the box's [sides, corners] pair is simply empty.
+  const flowSides =
+    element.type === "rectangle" ? getFlowShapeSides(element, offset) : null;
+
   // Get the element's building components we can test against
-  const [sides, corners] = deconstructRectanguloidElement(element, offset);
+  const [sides, corners] = flowSides
+    ? [flowSides, []]
+    : deconstructRectanguloidElement(element, offset);
 
   const intersections: GlobalPoint[] = [];
 
