@@ -9565,6 +9565,56 @@ class App extends React.Component<AppProps, AppState> {
             if (!this.state.selectedElementIds[hitElement.id]) {
               pointerDownState.hit.wasAddedToSelection = true;
             }
+            // flow: honour shift here so the modifier-held selection tool
+            // extends a selection the way the real selection tool does.
+            // Upstream replaced the selection unconditionally at this point,
+            // which swallowed shift entirely (the branch returns before the
+            // shift-aware path below is ever reached).
+            //
+            // Deselection is deliberately NOT handled here: the pointerup path
+            // further down owns it, gated on !drag.hasOccurred so that
+            // shift+DRAG moves the selection instead of deselecting it.
+            // Toggling here as well would double-toggle.
+            if (event.shiftKey) {
+              if (!this.state.selectedElementIds[hitElement.id]) {
+                this.setState((prevState) => {
+                  const nextIds: Record<string, true> = {
+                    ...prevState.selectedElementIds,
+                    [hitElement.id]: true,
+                  };
+                  const nextElements: ExcalidrawElement[] = [];
+                  Object.keys(nextIds).forEach((id) => {
+                    const el = this.scene.getElement(id);
+                    if (el) {
+                      nextElements.push(el);
+                    }
+                  });
+                  // Keep the "a frame and its children are never selected
+                  // together" invariant the normal selection path maintains.
+                  const kept =
+                    excludeElementsInFramesFromSelection(nextElements);
+                  return {
+                    editingGroupId: hitElement.groupIds.length
+                      ? hitElement.groupIds[0]
+                      : null,
+                    selectedGroupIds: {},
+                    selectedElementIds: makeNextSelectedElementIds(
+                      kept.reduce(
+                        (acc: Record<string, true>, element) => {
+                          acc[element.id] = true;
+                          return acc;
+                        },
+                        {} as Record<string, true>,
+                      ),
+                      prevState,
+                    ),
+                    previousSelectedElementIds: this.state.selectedElementIds,
+                  };
+                });
+              }
+              // mark as not completely handled so as to allow dragging etc.
+              return false;
+            }
             this.setState((prevState) => ({
               ...editGroupForSelectedElement(prevState, hitElement),
               previousSelectedElementIds: this.state.selectedElementIds,
