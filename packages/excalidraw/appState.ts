@@ -90,8 +90,6 @@ export const getDefaultAppState = (): Omit<
     bindingMode: "auto", // flow: persistent arrow-binding lock (default = auto)
     laserColor: DEFAULT_LASER_COLOR, // flow: global laser-pointer color
     selectionMode: "enclose", // flow: marquee selection mode (default = enclose)
-    gridColor: "#e5e5e5", // flow: thin gridline color (upstream regular shade)
-    gridColorBold: "#dddddd", // flow: bold gridline color (upstream bold shade)
     currentItemFlowShape: null, // flow: no shape armed by default
     defaultSidebarDockedPreference: false,
     isLoading: false,
