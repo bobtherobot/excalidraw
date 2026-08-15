@@ -64,6 +64,10 @@ const strokeGrid = (
   scrollY: number,
   zoom: Zoom,
   theme: StaticCanvasRenderConfig["theme"],
+  /** flow: thin/regular line color; falls back to the built-in constant */
+  gridColor: string,
+  /** flow: bold line color; falls back to the built-in constant */
+  gridColorBold: string,
   width: number,
   height: number,
 ) => {
@@ -99,9 +103,7 @@ const strokeGrid = (
 
     context.beginPath();
     context.setLineDash(isBold ? [] : lineDash);
-    context.strokeStyle = isBold
-      ? GridLineColor[theme].bold
-      : GridLineColor[theme].regular;
+    context.strokeStyle = isBold ? gridColorBold : gridColor;
     context.moveTo(x, offsetY - gridSize);
     context.lineTo(x, Math.ceil(offsetY + height + gridSize * 2));
     context.stroke();
@@ -120,9 +122,7 @@ const strokeGrid = (
 
     context.beginPath();
     context.setLineDash(isBold ? [] : lineDash);
-    context.strokeStyle = isBold
-      ? GridLineColor[theme].bold
-      : GridLineColor[theme].regular;
+    context.strokeStyle = isBold ? gridColorBold : gridColor;
     context.moveTo(offsetX - gridSize, y);
     context.lineTo(Math.ceil(offsetX + width + gridSize * 2), y);
     context.stroke();
@@ -277,6 +277,8 @@ const _renderStaticScene = ({
       appState.scrollY,
       appState.zoom,
       renderConfig.theme,
+      appState.gridColor ?? GridLineColor[renderConfig.theme].regular,
+      appState.gridColorBold ?? GridLineColor[renderConfig.theme].bold,
       normalizedWidth / appState.zoom.value,
       normalizedHeight / appState.zoom.value,
     );

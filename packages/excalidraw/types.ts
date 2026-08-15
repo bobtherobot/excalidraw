@@ -209,6 +209,8 @@ export type StaticCanvasAppState = Readonly<
     selectedElementsAreBeingDragged: AppState["selectedElementsAreBeingDragged"];
     gridSize: AppState["gridSize"];
     gridStep: AppState["gridStep"];
+    gridColor?: AppState["gridColor"]; // flow
+    gridColorBold?: AppState["gridColorBold"]; // flow
     frameRendering: AppState["frameRendering"];
     currentHoveredFontFamily: AppState["currentHoveredFontFamily"];
     hoveredElementIds: AppState["hoveredElementIds"];
@@ -362,6 +364,11 @@ export interface AppState {
    *  only elements the selection rectangle fully contains; "touch" selects any
    *  element the selection rectangle intersects. */
   selectionMode?: "enclose" | "touch";
+  /** flow addition: canvas grid line colors. `gridColor` paints the thin,
+   *  dashed regular lines; `gridColorBold` the solid every-`gridStep` lines.
+   *  Both undefined = Excalidraw's built-in two-tone constant. */
+  gridColor?: string;
+  gridColorBold?: string;
   // flow: the shape a newly drawn rectangle is stamped with (shapebar tools arm
   // it; every other tool clears it). null = draw a plain rectangle.
   currentItemFlowShape?: { kind: string; p: Record<string, number> } | null;
