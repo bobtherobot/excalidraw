@@ -9171,9 +9171,9 @@ class App extends React.Component<AppProps, AppState> {
         getGridPoint(
           origin.x,
           origin.y,
-          event[KEYS.CTRL_OR_CMD] || isElbowArrowOnly
-            ? null
-            : this.getEffectiveGridSize(),
+          // flow: dropped the `event[KEYS.CTRL_OR_CMD] ||` term — cmd/ctrl no
+          // longer bypasses grid snap. Elbow arrows keep their own bypass.
+          isElbowArrowOnly ? null : this.getEffectiveGridSize(),
         ),
       ),
       scrollbars: isOverScrollBars(
@@ -9952,9 +9952,8 @@ class App extends React.Component<AppProps, AppState> {
     const [gridX, gridY] = getGridPoint(
       sceneX,
       sceneY,
-      this.lastPointerDownEvent?.[KEYS.CTRL_OR_CMD]
-        ? null
-        : this.getEffectiveGridSize(),
+      // flow: cmd/ctrl no longer bypasses grid snap.
+      this.getEffectiveGridSize(),
     );
 
     const element = newIframeElement({
@@ -9992,9 +9991,8 @@ class App extends React.Component<AppProps, AppState> {
     const [gridX, gridY] = getGridPoint(
       sceneX,
       sceneY,
-      this.lastPointerDownEvent?.[KEYS.CTRL_OR_CMD]
-        ? null
-        : this.getEffectiveGridSize(),
+      // flow: cmd/ctrl no longer bypasses grid snap.
+      this.getEffectiveGridSize(),
     );
 
     const embedLink = getEmbedLink(link);
@@ -10045,9 +10043,8 @@ class App extends React.Component<AppProps, AppState> {
     const [gridX, gridY] = getGridPoint(
       sceneX,
       sceneY,
-      this.lastPointerDownEvent?.[KEYS.CTRL_OR_CMD]
-        ? null
-        : this.getEffectiveGridSize(),
+      // flow: cmd/ctrl no longer bypasses grid snap.
+      this.getEffectiveGridSize(),
     );
 
     const topLayerFrame = addToFrameUnderCursor
@@ -10214,7 +10211,11 @@ class App extends React.Component<AppProps, AppState> {
       const [gridX, gridY] = getGridPoint(
         pointerDownState.origin.x,
         pointerDownState.origin.y,
-        event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+        // flow: cmd/ctrl no longer bypasses grid snap (it is flow's selection-
+        // tool modifier, held for whole interactions, so the bypass was always
+        // on while selecting). Grid snap follows View ▸ Grid alone. Same edit at
+        // every other getEffectiveGridSize call site in this file.
+        this.getEffectiveGridSize(),
       );
 
       const topLayerFrame = this.getTopLayerFrameAtSceneCoords({
@@ -10438,9 +10439,8 @@ class App extends React.Component<AppProps, AppState> {
     const [gridX, gridY] = getGridPoint(
       pointerDownState.origin.x,
       pointerDownState.origin.y,
-      this.lastPointerDownEvent?.[KEYS.CTRL_OR_CMD]
-        ? null
-        : this.getEffectiveGridSize(),
+      // flow: cmd/ctrl no longer bypasses grid snap.
+      this.getEffectiveGridSize(),
     );
 
     const topLayerFrame = this.getTopLayerFrameAtSceneCoords({
@@ -10522,9 +10522,8 @@ class App extends React.Component<AppProps, AppState> {
     const [gridX, gridY] = getGridPoint(
       pointerDownState.origin.x,
       pointerDownState.origin.y,
-      this.lastPointerDownEvent?.[KEYS.CTRL_OR_CMD]
-        ? null
-        : this.getEffectiveGridSize(),
+      // flow: cmd/ctrl no longer bypasses grid snap.
+      this.getEffectiveGridSize(),
     );
 
     const constructorOpts = {
@@ -10643,7 +10642,8 @@ class App extends React.Component<AppProps, AppState> {
         const [gridX, gridY] = getGridPoint(
           pointerCoords.x,
           pointerCoords.y,
-          event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+          // flow: cmd/ctrl no longer bypasses grid snap.
+          this.getEffectiveGridSize(),
         );
 
         let index =
@@ -10729,7 +10729,8 @@ class App extends React.Component<AppProps, AppState> {
       const [gridX, gridY] = getGridPoint(
         pointerCoords.x,
         pointerCoords.y,
-        event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+        // flow: cmd/ctrl no longer bypasses grid snap.
+        this.getEffectiveGridSize(),
       );
 
       if (pointerDownState.resize.isResizing) {
@@ -11126,7 +11127,8 @@ class App extends React.Component<AppProps, AppState> {
               dragOffset,
               this.scene,
               snapOffset,
-              event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+              // flow: cmd/ctrl no longer bypasses grid snap.
+              this.getEffectiveGridSize(),
             );
           }
 
@@ -13409,7 +13411,8 @@ class App extends React.Component<AppProps, AppState> {
     let [gridX, gridY] = getGridPoint(
       pointerCoords.x,
       pointerCoords.y,
-      event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+      // flow: cmd/ctrl no longer bypasses grid snap.
+      this.getEffectiveGridSize(),
     );
 
     const image =
@@ -13502,7 +13505,8 @@ class App extends React.Component<AppProps, AppState> {
     const [x, y] = getGridPoint(
       pointerCoords.x - pointerDownState.resize.offset.x,
       pointerCoords.y - pointerDownState.resize.offset.y,
-      event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+      // flow: cmd/ctrl no longer bypasses grid snap.
+      this.getEffectiveGridSize(),
     );
 
     const croppingElement = this.scene
@@ -13531,7 +13535,8 @@ class App extends React.Component<AppProps, AppState> {
         const [gridX, gridY] = getGridPoint(
           pointerCoords.x,
           pointerCoords.y,
-          event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+          // flow: cmd/ctrl no longer bypasses grid snap.
+          this.getEffectiveGridSize(),
         );
 
         const dragOffset = {
@@ -13612,7 +13617,8 @@ class App extends React.Component<AppProps, AppState> {
     let [resizeX, resizeY] = getGridPoint(
       pointerCoords.x - pointerDownState.resize.offset.x,
       pointerCoords.y - pointerDownState.resize.offset.y,
-      event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+      // flow: cmd/ctrl no longer bypasses grid snap.
+      this.getEffectiveGridSize(),
     );
 
     const frameElementsOffsetsMap = new Map<
@@ -13643,7 +13649,8 @@ class App extends React.Component<AppProps, AppState> {
       const [gridX, gridY] = getGridPoint(
         pointerCoords.x,
         pointerCoords.y,
-        event[KEYS.CTRL_OR_CMD] ? null : this.getEffectiveGridSize(),
+        // flow: cmd/ctrl no longer bypasses grid snap.
+        this.getEffectiveGridSize(),
       );
 
       const dragOffset = {
