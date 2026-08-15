@@ -175,12 +175,15 @@ export const isSnappingEnabled = ({
       app.state.activeTool.type === "lasso" &&
       app.state.selectedElementsAreBeingDragged;
 
+    // flow: upstream inverted objectsSnapModeEnabled while cmd/ctrl was held.
+    // flow reserves that modifier for its temporary selection tool, so the
+    // modifier is held for whole interactions and the inversion made snapping
+    // permanently the opposite of what the toggle said. Snapping now follows
+    // the explicit toggles only (View ▸ Snap to Objects, the quickbar toggle,
+    // Alt+S). The lasso guard is upstream's and is kept.
     return (
       (app.state.activeTool.type !== "lasso" || isLassoDragging) &&
-      ((app.state.objectsSnapModeEnabled && !event[KEYS.CTRL_OR_CMD]) ||
-        (!app.state.objectsSnapModeEnabled &&
-          event[KEYS.CTRL_OR_CMD] &&
-          !isGridModeEnabled(app)))
+      app.state.objectsSnapModeEnabled
     );
   }
 
