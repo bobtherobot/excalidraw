@@ -64,9 +64,11 @@ const strokeGrid = (
   scrollY: number,
   zoom: Zoom,
   theme: StaticCanvasRenderConfig["theme"],
-  /** flow: thin/regular line color; falls back to the built-in constant */
+  /** flow: thin/regular line color, unconditional here — the caller (below)
+   *  resolves the built-in `GridLineColor` fallback via `??` before passing it in */
   gridColor: string,
-  /** flow: bold line color; falls back to the built-in constant */
+  /** flow: bold line color, unconditional here — the caller (below) resolves
+   *  the built-in `GridLineColor` fallback via `??` before passing it in */
   gridColorBold: string,
   width: number,
   height: number,
