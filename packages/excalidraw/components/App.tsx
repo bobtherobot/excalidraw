@@ -10785,7 +10785,12 @@ class App extends React.Component<AppProps, AppState> {
             this.state.selectedLinearElement,
             pointerCoords,
             this,
-            !event[KEYS.CTRL_OR_CMD],
+            // flow: cmd/ctrl no longer bypasses grid snap. This argument is
+            // `snapToGrid`; upstream passed `!event[KEYS.CTRL_OR_CMD]`. The
+            // neighbouring elbow-midpoint path above already dropped the
+            // modifier, so leaving it here made two adjacent midpoint paths
+            // disagree. `addMidpoint` keeps its own elbow-arrow exemption.
+            true,
             this.scene,
           );
           if (!ret) {

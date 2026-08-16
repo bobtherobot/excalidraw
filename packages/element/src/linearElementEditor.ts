@@ -322,7 +322,8 @@ export class LinearElementEditor {
         elementsMap,
         pivotPoint,
         pointFrom(scenePointerX, scenePointerY),
-        event[KEYS.CTRL_OR_CMD] ? null : app.getEffectiveGridSize(),
+        // flow: cmd/ctrl no longer bypasses grid snap.
+        app.getEffectiveGridSize(),
         customLineAngle,
       );
       const target = pointFrom<LocalPoint>(
@@ -338,7 +339,8 @@ export class LinearElementEditor {
         elementsMap,
         scenePointerX - linearElementEditor.pointerOffset.x,
         scenePointerY - linearElementEditor.pointerOffset.y,
-        event[KEYS.CTRL_OR_CMD] ? null : app.getEffectiveGridSize(),
+        // flow: cmd/ctrl no longer bypasses grid snap.
+        app.getEffectiveGridSize(),
       );
       deltaX = newDraggingPointPosition[0] - point[0];
       deltaY = newDraggingPointPosition[1] - point[1];
@@ -524,7 +526,8 @@ export class LinearElementEditor {
         elementsMap,
         pivotPoint,
         pointFrom(scenePointerX, scenePointerY),
-        event[KEYS.CTRL_OR_CMD] ? null : app.getEffectiveGridSize(),
+        // flow: cmd/ctrl no longer bypasses grid snap.
+        app.getEffectiveGridSize(),
         customLineAngle,
       );
       const target = pointFrom<LocalPoint>(
@@ -539,7 +542,8 @@ export class LinearElementEditor {
         elementsMap,
         scenePointerX - linearElementEditor.pointerOffset.x,
         scenePointerY - linearElementEditor.pointerOffset.y,
-        event[KEYS.CTRL_OR_CMD] ? null : app.getEffectiveGridSize(),
+        // flow: cmd/ctrl no longer bypasses grid snap.
+        app.getEffectiveGridSize(),
       );
       deltaX = newDraggingPointPosition[0] - draggingPoint[0];
       deltaY = newDraggingPointPosition[1] - draggingPoint[1];
@@ -1079,7 +1083,8 @@ export class LinearElementEditor {
               elementsMap,
               scenePointer.x,
               scenePointer.y,
-              event[KEYS.CTRL_OR_CMD] ? null : app.getEffectiveGridSize(),
+              // flow: cmd/ctrl no longer bypasses grid snap.
+              app.getEffectiveGridSize(),
             ),
           ],
         });
@@ -1732,6 +1737,10 @@ export class LinearElementEditor {
       elementsMap,
       pointerCoords.x,
       pointerCoords.y,
+      // flow: `snapToGrid` is now always `true` — App.tsx's only call site
+      // stopped deriving it from cmd/ctrl (see the `flow:` comment there).
+      // The parameter and the elbow-arrow exemption are left byte-identical to
+      // upstream so a replay conflicts on the caller alone.
       snapToGrid && !isElbowArrow(element) ? app.getEffectiveGridSize() : null,
     );
     const points = [
