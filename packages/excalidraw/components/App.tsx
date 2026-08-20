@@ -6294,10 +6294,17 @@ class App extends React.Component<AppProps, AppState> {
         // the container selected even if the text becomes empty and is deleted.
         // The autoshape tool stays active through the editing session and never
         // selects anything — don't fight the finalize action's selection reset.
+        //
+        // flow: dropped the `!this.isToolLocked()` term. Keeping the edited
+        // object selected is independent of whether the tool stays active;
+        // upstream conflates the two behind the tool lock, and flow forces the
+        // lock permanently on (see src/ui/toolbar/useToolOverride.ts), which
+        // silently disabled this too. **Third site in this family** — the other
+        // two are the auto-select-on-draw pair (~10369, ~12508). Symptom here:
+        // label a shape with Enter, press Escape, and the container is left
+        // deselected, so every panel control that needs a selection greys out.
         const elementIdToSelect =
-          viaKeyboard &&
-          !this.isToolLocked() &&
-          this.state.activeTool.type !== "autoshape"
+          viaKeyboard && this.state.activeTool.type !== "autoshape"
             ? element.containerId || (!isDeleted ? element.id : null)
             : null;
 
