@@ -52,6 +52,9 @@ import {
 } from "@excalidraw/element";
 
 import { renderSelectionElement } from "@excalidraw/element";
+// flow: the binding highlight must honour flow's persistent `bindingMode`
+// lock, so it reads the selector rather than `appState.isBindingEnabled`.
+import { isBindingEnabled } from "@excalidraw/element";
 
 import { getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
 import {
@@ -1684,7 +1687,7 @@ const _renderInteractiveScene = ({
     }
   }
 
-  if (appState.isBindingEnabled && appState.suggestedBinding) {
+  if (isBindingEnabled(appState) && appState.suggestedBinding) {
     nextAnimationState = {
       ...animationState,
       bindingHighlight: renderBindingHighlightForBindableElement(

@@ -374,7 +374,8 @@ export class LinearElementEditor {
         moveMidPointsWithElement: updates?.moveMidPointsWithElement,
       },
       {
-        isBindingEnabled: app.state.isBindingEnabled,
+        // flow: selector, not the raw field, so `bindingMode` is honoured.
+        isBindingEnabled: isBindingEnabled(app.state),
         isMidpointSnappingEnabled:
           app.state.isMidpointSnappingEnabled &&
           !angleLocked &&
@@ -578,7 +579,8 @@ export class LinearElementEditor {
         moveMidPointsWithElement: updates?.moveMidPointsWithElement,
       },
       {
-        isBindingEnabled: app.state.isBindingEnabled,
+        // flow: selector, not the raw field, so `bindingMode` is honoured.
+        isBindingEnabled: isBindingEnabled(app.state),
         isMidpointSnappingEnabled:
           app.state.isMidpointSnappingEnabled &&
           !angleLocked &&

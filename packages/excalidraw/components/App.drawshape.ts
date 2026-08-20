@@ -6,6 +6,7 @@ import {
   convertToShapeHandlePointerMoveFromPointerDown,
   getHoveredElementForBinding,
   isBindingElement,
+  isBindingEnabled,
   isLineElement,
   LinearElementEditor,
   maxBindingDistance_simple,
@@ -126,7 +127,8 @@ export class AppDrawShape {
           startOrEnd,
           app.scene,
           globalPoint,
-          app.state.isBindingEnabled,
+          // flow: selector, not the raw field, so `bindingMode` is honoured.
+          isBindingEnabled(app.state),
           isMidpointSnappingEnabled,
         );
       }
@@ -248,13 +250,15 @@ export class AppDrawShape {
           opacity: app.state.currentItemOpacity,
         };
 
-        if (app.state.isBindingEnabled && isLineElement(element)) {
+        // flow: selector, not the raw field, so `bindingMode` is honoured.
+        if (isBindingEnabled(app.state) && isLineElement(element)) {
           element = this.maybeUpgradeLineToArrow(element) ?? element;
         }
 
         app.insertNewElement(element);
 
-        if (app.state.isBindingEnabled && isBindingElement(element)) {
+        // flow: selector, not the raw field, so `bindingMode` is honoured.
+        if (isBindingEnabled(app.state) && isBindingElement(element)) {
           this.bindRecognizedArrow(element);
         }
       }

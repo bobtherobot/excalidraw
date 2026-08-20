@@ -195,12 +195,17 @@ export const bindOrUnbindBindingElement = (
     !opts?.angleLocked &&
     !appState.gridModeEnabled;
 
+  // flow: read through the `isBindingEnabled` selector, not the raw field, so
+  // flow's persistent `bindingMode` lock is honoured here too. See the note on
+  // the selector above.
+  const bindingEnabled = isBindingEnabled(appState);
+
   bindOrUnbindBindingElementEdge(
     arrow,
     start,
     "start",
     scene,
-    appState.isBindingEnabled,
+    bindingEnabled,
     isMidpointSnappingEnabled,
   );
   bindOrUnbindBindingElementEdge(
@@ -208,7 +213,7 @@ export const bindOrUnbindBindingElement = (
     end,
     "end",
     scene,
-    appState.isBindingEnabled,
+    bindingEnabled,
     isMidpointSnappingEnabled,
   );
   if (start.focusPoint || end.focusPoint) {

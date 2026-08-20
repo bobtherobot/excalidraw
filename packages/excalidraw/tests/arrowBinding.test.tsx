@@ -599,6 +599,92 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
   });
 
   // -------------------------------------------------------------------------
+  // flow's persistent binding lock (appState.bindingMode)
+  //
+  // The lock is honoured by ONE place, the `isBindingEnabled` selector in
+  // `packages/element/src/binding.ts`. Several upstream sites used to read the
+  // raw `state.isBindingEnabled` field instead and so ignored it. Note the
+  // state these tests set up is the SHIPPED one: flow never syncs
+  // `isBindingEnabled` to `bindingMode`, so the raw field stays `true` while
+  // the lock says "off". That divergence is the whole bug.
+  //
+  // MEASURED VACUOUS FOR THE RAW-READ FIX — DO NOT CITE THEM AS ITS COVERAGE.
+  // Both were run against the pre-fix vendor source and both PASSED, because
+  // arrow *drawing* already routed through the selector
+  // (`getBindingStrategyForDraggingBindingElementEndpoints`, binding.ts:612).
+  // The sites the fix actually changed are canvas rendering, elbow routing and
+  // outline snapping, and shape recognition — none reachable from a jsdom
+  // draw gesture. They are kept as characterization tests pinning the selector
+  // path itself. The real guard for the fix is `build-excalidraw.mjs` stage 7,
+  // which was verified to fire on the pre-fix source (11 raw reads -> 1).
+  // -------------------------------------------------------------------------
+
+  describe("bindingMode lock (flow)", () => {
+    it("no binding when the lock is off, even though the raw flag is true", async () => {
+      API.setElements([
+        API.createElement({
+          type: "rectangle",
+          id: "lockRect",
+          x: 100,
+          y: 100,
+          width: 400,
+          height: 200,
+        }),
+      ]);
+
+      API.setAppState({
+        bindingMode: "off",
+        isBindingEnabled: true,
+        bindingPreference: "enabled",
+      });
+
+      UI.clickTool("arrow");
+      mouse.down(200, 200);
+      mouse.up(700, 200);
+
+      await waitFor(() => {
+        const arrow = h.elements.find(
+          (el): el is ExcalidrawArrowElement => el.type === "arrow",
+        );
+        expect(arrow).toBeDefined();
+        expect(arrow!.startBinding).toBeNull();
+      });
+    });
+
+    it("binding happens when the lock is on, even though the raw flag is false", async () => {
+      API.setElements([
+        API.createElement({
+          type: "rectangle",
+          id: "lockRect2",
+          x: 100,
+          y: 100,
+          width: 400,
+          height: 200,
+        }),
+      ]);
+
+      API.setAppState({
+        bindingMode: "on",
+        isBindingEnabled: false,
+        bindingPreference: "disabled",
+      });
+
+      UI.clickTool("arrow");
+      mouse.down(200, 200);
+      mouse.up(700, 200);
+
+      await waitFor(() => {
+        const arrow = h.elements.find(
+          (el): el is ExcalidrawArrowElement => el.type === "arrow",
+        );
+        expect(arrow).toBeDefined();
+        expect(arrow!.startBinding).not.toBeNull();
+        expect(arrow!.startBinding!.elementId).toBe("lockRect2");
+      });
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // View-mode guard
   // -------------------------------------------------------------------------
 

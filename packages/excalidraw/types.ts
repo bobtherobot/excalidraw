@@ -231,6 +231,13 @@ export type InteractiveCanvasAppState = Readonly<
     multiElement: AppState["multiElement"];
     newElement: AppState["newElement"];
     isBindingEnabled: AppState["isBindingEnabled"];
+    // flow: the interactive canvas renders the binding highlight, so it needs
+    // flow's persistent lock too — without this field the `isBindingEnabled`
+    // selector would compile here (bindingMode is optional on AppState) but
+    // always fall through to the raw flag, silently ignoring the lock.
+    // Optional to match `AppState`: making it required here breaks every
+    // `AppState -> InteractiveCanvasAppState` assignment (9 call sites).
+    bindingMode?: AppState["bindingMode"];
     isMidpointSnappingEnabled: AppState["isMidpointSnappingEnabled"];
     gridModeEnabled: AppState["gridModeEnabled"];
     suggestedBinding: AppState["suggestedBinding"];

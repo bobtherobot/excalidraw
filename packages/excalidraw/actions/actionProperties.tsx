@@ -43,6 +43,8 @@ import {
 } from "@excalidraw/element";
 
 import { LinearElementEditor } from "@excalidraw/element";
+// flow: elbow fixed-point binding must honour flow's `bindingMode` lock.
+import { isBindingEnabled } from "@excalidraw/element";
 
 import { newElementWith } from "@excalidraw/element";
 import { getArrowheadForPicker } from "@excalidraw/element";
@@ -2071,7 +2073,7 @@ export const actionChangeArrowType = register<keyof typeof ARROW_TYPE>({
                   startElement,
                   "start",
                   elementsMap,
-                  appState.isBindingEnabled,
+                  isBindingEnabled(appState),
                 ),
               }
             : null;
@@ -2085,7 +2087,7 @@ export const actionChangeArrowType = register<keyof typeof ARROW_TYPE>({
                   endElement,
                   "end",
                   elementsMap,
-                  appState.isBindingEnabled,
+                  isBindingEnabled(appState),
                 ),
               }
             : null;
