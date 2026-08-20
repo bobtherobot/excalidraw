@@ -505,11 +505,23 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
   });
 
   // -------------------------------------------------------------------------
-  // Ctrl / Cmd key toggle
+  // Ctrl / Cmd key toggle — REMOVED BY FLOW
+  //
+  // flow: upstream used a held cmd/ctrl to invert `isBindingEnabled` away from
+  // `bindingPreference`. flow reserves cmd/ctrl for its temporary selection
+  // tool, so the modifier is held for a whole interaction and "hold to invert"
+  // became "permanently inverted while selecting" — the same defect already
+  // removed for object snap and grid snap. The inversion is deleted at both
+  // sites (`handleKeyDown` and `handleLinearElementOnPointerDown`).
+  //
+  // These tests previously asserted the inversion. They now assert its
+  // ABSENCE, so an upstream replay that restores either site fails here
+  // loudly rather than silently reintroducing the defect.
+  // See `.claude/memory/tool-override.md`, "The fifth collision: arrow binding".
   // -------------------------------------------------------------------------
 
-  describe("Ctrl key toggle when binding preference is disabled", () => {
-    it("Ctrl keydown temporarily enables binding when preference is disabled", () => {
+  describe("cmd/ctrl does not toggle binding (flow)", () => {
+    it("Ctrl keydown leaves binding off when the preference is disabled", () => {
       API.setAppState({
         bindingPreference: "disabled",
         isBindingEnabled: false,
@@ -517,117 +529,71 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
 
       ctrlKeyDown();
 
+      expect(h.state.isBindingEnabled).toBe(false);
+    });
+
+    it("Ctrl keydown leaves binding on when the preference is enabled", () => {
+      expect(h.state.isBindingEnabled).toBe(true);
+
+      ctrlKeyDown();
+
       expect(h.state.isBindingEnabled).toBe(true);
     });
 
-    it("Ctrl keyup restores isBindingEnabled to false after the temporary toggle", () => {
+    it("a full down/up cycle is a no-op in both preference states", () => {
+      // preference disabled
       API.setAppState({
         bindingPreference: "disabled",
         isBindingEnabled: false,
       });
 
       ctrlKeyDown();
-      expect(h.state.isBindingEnabled).toBe(true);
-
+      expect(h.state.isBindingEnabled).toBe(false);
       ctrlKeyUp();
       expect(h.state.isBindingEnabled).toBe(false);
-    });
 
-    it("full round-trip: off → Ctrl down → on → Ctrl up → off", () => {
+      // preference enabled
       API.setAppState({
-        bindingPreference: "disabled",
-        isBindingEnabled: false,
+        bindingPreference: "enabled",
+        isBindingEnabled: true,
       });
 
       ctrlKeyDown();
       expect(h.state.isBindingEnabled).toBe(true);
-
-      ctrlKeyUp();
-      expect(h.state.isBindingEnabled).toBe(false);
-    });
-
-    it("full round-trip can be repeated after Ctrl release resets state", () => {
-      API.setAppState({
-        bindingPreference: "disabled",
-        isBindingEnabled: false,
-      });
-
-      // First cycle
-      ctrlKeyDown();
-      expect(h.state.isBindingEnabled).toBe(true);
-      ctrlKeyUp();
-      expect(h.state.isBindingEnabled).toBe(false);
-
-      // Second cycle
-      ctrlKeyDown();
-      expect(h.state.isBindingEnabled).toBe(true);
-      ctrlKeyUp();
-      expect(h.state.isBindingEnabled).toBe(false);
-    });
-  });
-
-  describe("Ctrl key toggle when binding starts ON", () => {
-    it("Ctrl keydown temporarily disables binding when it was on", () => {
-      expect(h.state.isBindingEnabled).toBe(true);
-
-      ctrlKeyDown();
-      expect(h.state.isBindingEnabled).toBe(false);
-    });
-
-    it("Ctrl keyup restores isBindingEnabled to true after the temporary toggle", () => {
-      expect(h.state.isBindingEnabled).toBe(true);
-
-      ctrlKeyDown();
-      expect(h.state.isBindingEnabled).toBe(false);
-
       ctrlKeyUp();
       expect(h.state.isBindingEnabled).toBe(true);
     });
-  });
 
-  // -------------------------------------------------------------------------
-  // event.repeat guard
-  // -------------------------------------------------------------------------
-
-  describe("event.repeat guard", () => {
-    it("Ctrl keydown with repeat=true does not toggle binding (preference: disabled)", () => {
-      API.setAppState({
-        bindingPreference: "disabled",
-        isBindingEnabled: false,
-      });
-
-      ctrlKeyDown({ repeat: true });
-
-      // Must remain off – repeat events are ignored
-      expect(h.state.isBindingEnabled).toBe(false);
-    });
-
-    it("Ctrl keydown with repeat=true does not toggle binding (default: on)", () => {
-      expect(h.state.isBindingEnabled).toBe(true);
-
-      ctrlKeyDown({ repeat: true });
-
-      expect(h.state.isBindingEnabled).toBe(true);
-    });
-
-    it("pressing another key while Ctrl held does not change binding state", () => {
-      // Start ON, first Ctrl keydown flips to false
+    it("holding ctrl across another keystroke does not change binding", () => {
       expect(h.state.isBindingEnabled).toBe(true);
 
       ctrlKeyDown();
-      expect(h.state.isBindingEnabled).toBe(false);
+      expect(h.state.isBindingEnabled).toBe(true);
 
-      // A second keydown with Ctrl (e.g. pressing another key while Ctrl held)
-      // should leave state unchanged
       fireEvent.keyDown(document, {
         key: "z",
         ctrlKey: true,
         repeat: false,
       });
+      expect(h.state.isBindingEnabled).toBe(true);
+
+      ctrlKeyUp();
+      expect(h.state.isBindingEnabled).toBe(true);
+    });
+
+    it("repeat keydowns do not change binding in either preference state", () => {
+      API.setAppState({
+        bindingPreference: "disabled",
+        isBindingEnabled: false,
+      });
+      ctrlKeyDown({ repeat: true });
       expect(h.state.isBindingEnabled).toBe(false);
 
-      // Ctrl keyup restores to preference value
-      ctrlKeyUp();
+      API.setAppState({
+        bindingPreference: "enabled",
+        isBindingEnabled: true,
+      });
+      ctrlKeyDown({ repeat: true });
       expect(h.state.isBindingEnabled).toBe(true);
     });
   });
@@ -636,6 +602,11 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
   // View-mode guard
   // -------------------------------------------------------------------------
 
+  // flow: this block is now VACUOUS — with the cmd/ctrl inversion deleted,
+  // `isBindingEnabled` stays put in view mode and out of it alike, so the
+  // assertion no longer isolates the viewMode early return. Kept rather than
+  // deleted so an upstream replay that restores the inversion still has to
+  // reckon with a viewMode case; treat a pass here as no evidence on its own.
   describe("View-mode guard", () => {
     it("Ctrl keydown in viewMode does not toggle isBindingEnabled", () => {
       API.setAppState({

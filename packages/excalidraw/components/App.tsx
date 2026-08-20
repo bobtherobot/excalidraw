@@ -5639,16 +5639,17 @@ class App extends React.Component<AppProps, AppState> {
           this.resetDelayedBindMode();
         }
 
-        flushSync(() => {
-          this.setState({
-            isBindingEnabled: this.state.bindingPreference !== "enabled",
-          });
-        });
-
-        // the toggle changes what a text-tool click at the current position
-        // would do, with no pointermove to refresh the affordance
-        this.arrowText.refresh();
-
+        // flow: cmd/ctrl no longer inverts arrow binding. Upstream flipped
+        // `isBindingEnabled` away from `bindingPreference` for as long as the
+        // modifier was held; flow reserves cmd/ctrl for the temporary selection
+        // tool, so it is held for a whole interaction and the "hold to invert"
+        // gesture became "permanently inverted while selecting" — the same
+        // defect already removed for object snap and grid snap. Binding now
+        // follows the preference alone (flow's own `bindingMode` lock, honoured
+        // by the `isBindingEnabled` selector in `packages/element/src/binding.ts`,
+        // and upstream's `bindingPreference`). The `arrowText.refresh()` that
+        // stood here went with it: it existed only to repaint the affordance
+        // after this toggle changed it.
         maybeHandleArrowPointlikeDrag({ app: this, event });
       }
 
@@ -10080,14 +10081,15 @@ class App extends React.Component<AppProps, AppState> {
     elementType: ExcalidrawLinearElement["type"],
     pointerDownState: PointerDownState,
   ): void => {
-    if (event.ctrlKey) {
-      flushSync(() => {
-        this.setState({
-          isBindingEnabled: this.state.bindingPreference !== "enabled",
-        });
-      });
-    }
-
+    // flow: cmd/ctrl no longer inverts arrow binding — see the matching
+    // deletion in `handleKeyDown`. This site was the same inversion written a
+    // second time, and on a raw `event.ctrlKey` rather than KEYS.CTRL_OR_CMD,
+    // which is why the two restores below it (`handleCanvasPointerDown` and
+    // `handleCanvasPointerUp`, also raw `ctrlKey`) made the defect behave
+    // differently on macOS than on Linux/Windows. Those restores are left in
+    // place: with both inversions gone they are redundant rather than wrong,
+    // and they re-converge `isBindingEnabled` on the preference if an upstream
+    // replay ever reintroduces an inverter.
     if (this.state.multiElement) {
       const { multiElement, selectedLinearElement } = this.state;
 
