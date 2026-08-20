@@ -9623,6 +9623,27 @@ class App extends React.Component<AppProps, AppState> {
               // mark as not completely handled so as to allow dragging etc.
               return false;
             }
+            // flow: grabbing an element that is ALREADY part of the selection
+            // must move the whole selection, exactly as the real selection tool
+            // does. Upstream falls straight into `editGroupForSelectedElement`
+            // below, which replaces `selectedElementIds` wholesale with just
+            // the hit element — so under flow's modifier-held selection tool
+            // (where cmd/ctrl is held for the entire interaction) a drag on a
+            // multi-selection collapsed it to one element and moved only that.
+            //
+            // The real selection tool's own path further down encodes exactly
+            // this rule: its work is guarded by
+            // `if (!this.state.selectedElementIds[hitElement.id])`, i.e. an
+            // already-selected hit changes no state and the drag proceeds on
+            // the existing selection. This mirrors that guard.
+            //
+            // Rotation never exposed the bug because transform handles are hit
+            // earlier and never reach this branch — which is why the report was
+            // "moving breaks but rotating is fine".
+            if (someHitElementIsSelected) {
+              // mark as not completely handled so as to allow dragging etc.
+              return false;
+            }
             this.setState((prevState) => ({
               ...editGroupForSelectedElement(prevState, hitElement),
               previousSelectedElementIds: this.state.selectedElementIds,
