@@ -111,6 +111,7 @@ import {
   isSelectionLikeTool,
   oneOf,
   getStrokeWidthByKey,
+  PASTE_OFFSET_STEP, // flow: cascade step for the "offset" paste position
 } from "@excalidraw/common";
 
 import {
@@ -4506,8 +4507,8 @@ class App extends React.Component<AppProps, AppState> {
       this.addElementsFromPasteOrLibrary({
         elements,
         files: data.files || null,
-        position:
-          this.editorInterface.formFactor === "desktop" ? "cursor" : "center",
+        // flow: the one call site that honors the paste-position preference.
+        ...this.resolvePastePositioning(elements),
         retainSeed: isPlainPaste,
         preserveFrameChildrenOrder: true,
       });
@@ -4651,10 +4652,64 @@ class App extends React.Component<AppProps, AppState> {
     },
   );
 
+  /** flow: fingerprint of the clipboard payload the "offset" paste position
+   *  last cascaded, and how many times it has been pasted. Session state only —
+   *  never persisted, never part of appState. */
+  private lastPasteFingerprint: string | null = null;
+  private pasteCascadeStep = 0;
+
+  /** flow: resolve the `pastePosition` preference into placement arguments for
+   *  `addElementsFromPasteOrLibrary`. Only the clipboard-elements paste path
+   *  calls this, so library inserts and drag-drop keep their own placement.
+   *  "offset" cascades — pasting the same payload again steps one further
+   *  `PASTE_OFFSET_STEP` so repeated pastes fan out instead of stacking. */
+  private resolvePastePositioning = (
+    elements: readonly ExcalidrawElement[],
+  ): {
+    position: "cursor" | "center" | "keep";
+    offset?: { x: number; y: number };
+  } => {
+    switch (this.state.pastePosition ?? "original") {
+      case "pointer":
+        // Deliberately NOT gated on `formFactor === "desktop"` the way the
+        // stock call site was. flow's rails and docks shrink the editor to
+        // ~896x684 in a 1280x720 window, which `getFormFactor` classifies as
+        // "tablet" — so the upstream gate silently turned paste-at-cursor into
+        // paste-at-viewport-center on ordinary desktop windows. An explicit
+        // preference has to mean what it says; "viewport" is right there for
+        // anyone who wants the other behavior.
+        return { position: "cursor" };
+      case "viewport":
+        return { position: "center" };
+      case "offset": {
+        const fingerprint = elements.map((element) => element.id).join(",");
+        this.pasteCascadeStep =
+          fingerprint === this.lastPasteFingerprint
+            ? this.pasteCascadeStep + 1
+            : 1;
+        this.lastPasteFingerprint = fingerprint;
+        const delta = this.pasteCascadeStep * PASTE_OFFSET_STEP;
+        return { position: "keep", offset: { x: delta, y: delta } };
+      }
+      case "original":
+      default:
+        return { position: "keep" };
+    }
+  };
+
   addElementsFromPasteOrLibrary = (opts: {
     elements: readonly ExcalidrawElement[];
     files: BinaryFiles | null;
-    position: { clientX: number; clientY: number } | "cursor" | "center";
+    position:
+      | { clientX: number; clientY: number }
+      | "cursor"
+      | "center"
+      // flow: keep the elements' own scene coordinates, translated by `offset`.
+      // Drives the "original"/"offset" paste-position preferences; only the
+      // clipboard-elements paste path passes it.
+      | "keep";
+    /** flow: scene-space translation, applied in `"keep"` mode only. */
+    offset?: { x: number; y: number };
     retainSeed?: boolean;
     fit?: SetViewportOptions["fit"];
     preserveFrameChildrenOrder?: boolean;
@@ -4680,15 +4735,26 @@ class App extends React.Component<AppProps, AppState> {
         ? this.viewport.lastPosition.y
         : this.state.height / 2 + this.state.offsetTop;
 
-    const { x, y } = viewportCoordsToSceneCoords(
-      { clientX, clientY },
-      this.state,
-    );
+    // flow: "keep" places the elements at their own coordinates plus `offset`
+    // rather than centering them on a viewport point. Expressing that as a
+    // target *center* keeps the dx/dy maths below shared by every mode.
+    const keepPosition = opts.position === "keep";
+
+    const { x, y } = keepPosition
+      ? {
+          x: minX + elementsCenterX + (opts.offset?.x ?? 0),
+          y: minY + elementsCenterY + (opts.offset?.y ?? 0),
+        }
+      : viewportCoordsToSceneCoords({ clientX, clientY }, this.state);
 
     const dx = x - elementsCenterX;
     const dy = y - elementsCenterY;
 
-    const [gridX, gridY] = getGridPoint(dx, dy, this.getEffectiveGridSize());
+    // flow: exact placement must not be nudged onto the grid — snapping would
+    // defeat both "paste in place" and the fixed-step offset cascade.
+    const [gridX, gridY] = keepPosition
+      ? [dx, dy]
+      : getGridPoint(dx, dy, this.getEffectiveGridSize());
 
     const { duplicatedElements } = duplicateElements({
       type: "everything",

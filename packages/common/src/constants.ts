@@ -250,6 +250,11 @@ export const CANVAS_ONLY_ACTIONS = ["selectAll"];
 export const DEFAULT_GRID_SIZE = 20;
 export const DEFAULT_GRID_STEP = 5;
 
+// flow: scene-space step used by the "offset" paste-position preference. Each
+// consecutive paste of the same clipboard payload is nudged one more step down
+// and to the right so repeated pastes fan out instead of stacking.
+export const PASTE_OFFSET_STEP = 10;
+
 export const IMAGE_MIME_TYPES = {
   svg: "image/svg+xml",
   png: "image/png",

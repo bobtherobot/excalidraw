@@ -367,6 +367,14 @@ export interface AppState {
    *  "auto"/undefined keeps Excalidraw's default (transient) behavior. */
   bindingMode?: "on" | "off" | "auto";
   laserColor?: string; // flow: global laser-pointer trail color
+  /** flow addition: where a clipboard paste of *elements* lands.
+   *  "pointer" centers the pasted bounding box on the last canvas pointer
+   *  position (Excalidraw's stock desktop behavior), "viewport" centers it in
+   *  the visible canvas, "offset" keeps the elements' own coordinates nudged by
+   *  a cascading `PASTE_OFFSET_STEP`, and "original"/undefined pastes them
+   *  exactly where they were copied from. Only clipboard element pastes honor
+   *  it — library inserts, drag-drop, and text/image pastes are unaffected. */
+  pastePosition?: "pointer" | "viewport" | "offset" | "original";
   /** flow addition: marquee drag-selection mode. "enclose" (default) selects
    *  only elements the selection rectangle fully contains; "touch" selects any
    *  element the selection rectangle intersects. */
