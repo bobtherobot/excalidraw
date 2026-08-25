@@ -579,3 +579,10 @@ export {
   getFlowShapeGeometry,
   clearFlowShapes,
 } from "@excalidraw/common";
+
+// flow: surface the per-font default line height so flow's Text panel can tell a
+// user-chosen line height apart from the one the font itself supplies. Needed
+// because `changeFontFamily` (actionProperties.tsx) overwrites lineHeight with
+// this value on every font change; flow re-applies the user's own afterwards.
+// Additive re-export of a pure metadata lookup — no behaviour change.
+export { getLineHeight } from "@excalidraw/common";
