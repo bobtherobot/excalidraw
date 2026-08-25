@@ -55,15 +55,7 @@ const transformHandleSizes: { [k in PointerType]: number } = {
   touch: 28,
 };
 
-// flow: the rotation handle sits diagonally outside the NE corner rather than
-// above the top edge, so flow's quick-arrow affordances can own the edge
-// midpoints without competing with it for the same pixels. This gap is the
-// diagonal offset from the corner. `resizeTest` and flow's rotate-cursor edit
-// both read `getTransformHandlesFromCoords`, so hit-testing and the cursor
-// follow from this one site with no second edit. Guarded by stage 9 of
-// scripts/build-excalidraw.mjs. See docs/superpowers/specs/
-// 2026-08-25-quick-arrows-design.md.
-const ROTATION_HANDLE_CORNER_GAP = 12;
+const ROTATION_RESIZE_HANDLE_GAP = 16;
 
 export const DEFAULT_OMIT_SIDES = {
   e: true,
@@ -210,15 +202,12 @@ export const getTransformHandlesFromCoords = (
     rotation: omitSides.rotation
       ? undefined
       : generateTransformHandle(
-          x2 +
-            dashedLineMargin -
-            centeringOffset +
-            ROTATION_HANDLE_CORNER_GAP / zoom.value,
+          x1 + width / 2 - handleWidth / 2,
           y1 -
             dashedLineMargin -
             handleMarginY +
             centeringOffset -
-            ROTATION_HANDLE_CORNER_GAP / zoom.value,
+            ROTATION_RESIZE_HANDLE_GAP / zoom.value,
           handleWidth,
           handleHeight,
           cx,
