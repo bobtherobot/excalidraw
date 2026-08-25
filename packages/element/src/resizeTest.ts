@@ -264,7 +264,13 @@ export const getCursorForResizingElement = (resizingElement: {
       }
       break;
     case "rotation":
-      return "grab";
+      // flow: a CSS custom property resolves inside the inline style App writes
+      // here, so flow can supply its own circular-arrow cursor from its own
+      // stylesheet without this package carrying the artwork. The `grab`
+      // fallback only applies when the variable is undefined, so the variable's
+      // own value ends in `, grab` too — a data URI that fails to decode falls
+      // back to the last keyword in the list, not to this one.
+      return "var(--flow-rotate-cursor, grab)";
   }
 
   if (cursor && element) {
